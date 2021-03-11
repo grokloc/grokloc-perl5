@@ -1,0 +1,2 @@
+FROM grokloc/grokloc-perl5:ci
+CMD ["tail", "-f", "/dev/null"]

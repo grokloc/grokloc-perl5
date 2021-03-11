@@ -1,0 +1,19 @@
+name: ci
+on: [push]
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    container:
+      image: grokloc/grokloc:perl5-dev
+      env:
+        PERL5LIB: "/__w/grokloc-perl5/grokloc-perl5/lib:/__w/grokloc-perl5/grokloc-perl5/service/app/lib"
+        PERLCRITIC: "/__w/grokloc-perl5/grokloc-perl5/.perlcritic"
+        PERL_JSON_BACKEND: "Cpanel::JSON::XS,JSON::XS,JSON::PP"
+        CHECKOUT_PATH: "/__w/grokloc-perl5/grokloc-perl5"
+        GROKLOC_ENV: "UNIT"
+        CI: "1"
+    steps:
+      - uses: actions/checkout@v2
+      - run: make ci-check
+      - run: make ci-test
+      - run: make ci-critic
