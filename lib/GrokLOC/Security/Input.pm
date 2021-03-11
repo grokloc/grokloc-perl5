@@ -14,9 +14,10 @@ our $AUTHORITY = 'cpan:bclawsie';
 use base qw(Exporter);
 
 # Permitted lengths.
-Readonly::Scalar our $STR_MAX => 4096;
+Readonly::Scalar our $STR_MAX      => 4096;
+Readonly::Scalar our $UNIXTIME_MAX => 1_767_139_200;
 
-# safe_objs returns 1 if all objs in $ar are of $class;
+# safe_objs returns 1 if all objs in $ar are instances of a class in $class.
 sub safe_objs ( $objs, $classes ) {
     croak 'objs not array ref'    if ( ref($objs) ne 'ARRAY' );
     croak 'classes not array ref' if ( ref($classes) ne 'ARRAY' );
@@ -27,7 +28,6 @@ sub safe_objs ( $objs, $classes ) {
     return 1;
 }
 
-# safe_str makes sure inputs taken as external args are relatively safe.
 sub safe_str($s) {
     return if length $s == 0;
     return if length $s > $STR_MAX;
@@ -36,14 +36,12 @@ sub safe_str($s) {
     return 1;
 }
 
-# safe_strs runs safe_str on a list.
 sub safe_strs($ar) {
     return if ( !( ref($ar) eq 'ARRAY' ) );
     return if scalar @{$ar} == 0;
     return all { safe_str($_) } @{$ar};
 }
 
-# safe_unixtime makes sure unixtime assignments are sane.
 sub safe_unixtime($t) {
     Readonly::Scalar my $DEC_31_2025 => 1_767_139_200;
     return if ( $t !~ /^\d+$/msx );
@@ -53,6 +51,8 @@ sub safe_unixtime($t) {
 }
 
 our @EXPORT_OK = qw(
+  $STR_MAX
+  $UNIXTIME_MAX
   safe_objs
   safe_str
   safe_strs
@@ -60,6 +60,16 @@ our @EXPORT_OK = qw(
 );
 
 our %EXPORT_TAGS = (
+    all => [
+        qw(
+          $STR_MAX
+          $UNIXTIME_MAX
+          safe_objs
+          safe_str
+          safe_strs
+          safe_unixtime
+          )
+    ],
     validators => [
         qw(
           safe_objs
