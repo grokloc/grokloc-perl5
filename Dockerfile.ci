@@ -34,6 +34,7 @@ RUN apt-get -y install \
     libdist-zilla-perl \
     ca-certificates
 RUN cpanm -n Mojo::Redis Test2::Harness Perl::Critic::TooMuchCode Dist::Zilla::Plugin::RewriteVersion Dist::Zilla::PluginBundle::Basic && rm -rf /root/.cpanm/work
+RUN cpanm -n Mojolicious
 RUN rm -f /root/.cpan/build.log && rm -f /root/.cpan/latest-build
 RUN apt-get -y autoremove
 RUN apt-get clean
