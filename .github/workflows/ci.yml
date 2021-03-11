@@ -11,6 +11,9 @@ jobs:
         PERL_JSON_BACKEND: "Cpanel::JSON::XS,JSON::XS,JSON::PP"
         CHECKOUT_PATH: "/__w/grokloc-perl5/grokloc-perl5"
         GROKLOC_ENV: "UNIT"
+        ROOT_ORG: "e0f6dc9c-6cb0-45e4-8d32-32f32c123421"
+        ENCRYPT_KEY: "fe373cqj9iu9x9zv37whadr35k2ybm42"
+        SIGN_KEY: "2u9tokzmm9xcich5vid9m6is6fiw8l5g"
         CI: "1"
     steps:
       - uses: actions/checkout@v2
