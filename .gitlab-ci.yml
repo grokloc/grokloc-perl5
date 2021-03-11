@@ -1,0 +1,34 @@
+image: grokloc/grokloc-perl5:ci
+
+variables:
+  PERL5LIB: "/builds/grokloc/grokloc-perl5/lib:/builds/grokloc/grokloc-perl5/service/app/lib"
+  PERLCRITIC: "/builds/grokloc/grokloc-perl5/.perlcritic"
+  PERL_JSON_BACKEND: "Cpanel::JSON::XS,JSON::XS,JSON::PP"
+  GROKLOC_ENV: "UNIT"
+  APP_HOST: "localhost"
+  APP_PORT: "3000"
+  CI: "1"
+  
+default:
+  before_script:
+    - ln -s /builds/grokloc/grokloc-perl5 /grokloc
+
+stages:
+  - check
+  - test
+  - critic
+
+check:
+  stage: check
+  script:
+    - make ci-check
+
+test:
+  stage: test
+  script:
+    - make ci-test
+
+critic:
+  stage: critic
+  script:
+    - make ci-critic
