@@ -1,6 +1,5 @@
 package GrokLOC::State;
 use strictures 2;
-use English qw(-no_match_vars);
 use Mojo::SQLite;
 use Moo;
 use Types::Standard qw(ArrayRef Int Object Str);
