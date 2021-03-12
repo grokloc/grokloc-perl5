@@ -57,8 +57,7 @@ has key => (
 # random_replica returns a random replica - the safe_objs call insures
 # that this list is not empty at construction.
 sub random_replica($self) {
-    my @replicas = @{ $self->replicas };
-    return $replicas[ rand @replicas ];
+    return $self->replicas->[ int rand( scalar @{ $self->replicas } ) ];
 }
 
 1;

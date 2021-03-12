@@ -90,7 +90,7 @@ begin
         update repositories set mtime = strftime('%s','now') 
         where id = new.id;
 end;
--- 1 up
+-- 1 down
 drop trigger users_mtime_trigger;
 drop trigger users_ctime_trigger;
 drop table users;

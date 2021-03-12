@@ -4,6 +4,7 @@ use Carp qw(croak);
 use Crypt::Misc qw(random_v4uuid);
 use Moo;
 use Readonly;
+use Syntax::Keyword::Try qw(try catch :experimental);
 use Types::Standard qw(Str);
 use experimental qw(signatures);
 use GrokLOC::Models qw(:all);
@@ -19,6 +20,7 @@ our $AUTHORITY = 'cpan:bclawsie';
 with 'GrokLOC::Models::Base';
 
 Readonly::Scalar our $SCHEMA_VERSION => 0;
+Readonly::Scalar our $TABLENAME      => 'orgs';
 
 has name => (
     is       => 'ro',
@@ -72,6 +74,45 @@ sub TO_JSON($self) {
         owner => $self->owner,
         _meta => $self->_meta->TO_JSON(),
     };
+}
+
+sub insert ( $self, $master ) {
+    croak 'bad db ref'
+      unless safe_objs( [$master], [ 'Mojo::SQLite', 'Mojo::Pg' ] );
+    try {
+        $master->db->insert(
+            $TABLENAME,
+            {
+                id      => $self->id,
+                name    => $self->name,
+                owner   => $self->owner,
+                status  => $self->_meta->status,
+                version => $SCHEMA_VERSION,
+            }
+        );
+    }
+    catch ($e) {
+        return $RESPONSE_CONFLICT if ( $e =~ /unique/ims );
+        croak 'uncaught: ' . $e;
+    };
+    return $RESPONSE_OK;
+}
+
+sub read ( $self, $c, $id ) {
+    croak 'bad db ref'
+      unless safe_objs( [$c], [ 'Mojo::SQLite', 'Mojo::Pg' ] );
+    my $v = $c->db->select( $TABLENAME, [qw{*}], { 'id' => $id } )->hash;
+    return $RESPONSE_NOT_FOUND unless ( defined $v );
+    return $self->new(
+        id    => $v->{id},
+        name  => $v->{name},
+        owner => $v->{owner},
+        _meta => GrokLOC::Models::Meta->new(
+            ctime  => $v->{ctime},
+            mtime  => $v->{mtime},
+            status => $v->{status}
+        )
+    );
 }
 
 1;

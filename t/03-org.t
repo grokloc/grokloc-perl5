@@ -61,6 +61,46 @@ ok(
 
 is( $rt->id, $org->id, 'id round trip' );
 
+my $result;
+
+ok(
+    lives {
+        $result = $org->insert( $st->master );
+    },
+    'insert'
+) or note($@);
+
+is( $result, $RESPONSE_OK, 'insert ok' );
+
+ok(
+    lives {
+        $result = $org->insert( $st->master );
+    },
+    'insert'
+) or note($@);
+
+is( $result, $RESPONSE_CONFLICT, 'insert duplicate' );
+
+my $read_org;
+
+ok(
+    lives {
+        $read_org = $org->read( $st->random_replica(), $org->id );
+    },
+    'read'
+) or note($@);
+
+is( $read_org->id, $org->id, 'read ok' );
+
+ok(
+    lives {
+        $result = $org->read( $st->random_replica(), random_v4uuid );
+    },
+    'read'
+) or note($@);
+
+is( $result, $RESPONSE_NOT_FOUND, 'not found' );
+
 done_testing;
 
 1;

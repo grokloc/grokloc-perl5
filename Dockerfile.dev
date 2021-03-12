@@ -1,2 +1,3 @@
 FROM grokloc/grokloc-perl5:ci
+RUN apt-get update && apt-get -y install sqlite3
 CMD ["tail", "-f", "/dev/null"]
