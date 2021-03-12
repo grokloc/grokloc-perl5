@@ -101,7 +101,7 @@ sub insert ( $self, $master ) {
 sub read ( $self, $c, $id ) {
     croak 'bad db ref'
       unless safe_objs( [$c], [ 'Mojo::SQLite', 'Mojo::Pg' ] );
-    my $v = $c->db->select( $TABLENAME, [qw{*}], { 'id' => $id } )->hash;
+    my $v = $c->db->select( $TABLENAME, [qw{*}], { id => $id } )->hash;
     return $RESPONSE_NOT_FOUND unless ( defined $v );
     return $self->new(
         id    => $v->{id},
