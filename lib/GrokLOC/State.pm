@@ -4,7 +4,7 @@ use English qw(-no_match_vars);
 use Mojo::SQLite;
 use Moo;
 use Types::Standard qw(ArrayRef Int Object Str);
-use experimental qw(signatures switch);
+use experimental qw(signatures);
 use GrokLOC::Env qw(:all);
 use GrokLOC::Security::Input qw(:validators);
 use GrokLOC::Security::Crypt qw(:lens);
@@ -54,6 +54,11 @@ has key => (
     isa      => Str->where('length $_ == $GrokLOC::Security::Crypt::KEY_LEN'),
     required => 1,
 );
+
+sub random_replica($self) {
+    
+}
+
 1;
 
 __END__
