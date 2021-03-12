@@ -14,7 +14,7 @@ CRITIC_ARGS  =
 TCRITIC_ARGS = --theme=tests
 LIBS         = $(shell find lib -type f -name \*pm)
 LIB_TESTS    = $(shell find t -type f)
-APP_TESTS    = $(shell find service/app/t -type f)
+APP_TESTS    = $(shell if [ -d service/app/t ]; then find service/app/t -type f; fi)
 APP_MAIN     = service/app/script/app
 RUN          = $(DOCKER_RUN) -v $(CWD):$(BASE) -w $(BASE) $(UNIT_ENVS) $(PORTS) $(IMG_DEV)
 
