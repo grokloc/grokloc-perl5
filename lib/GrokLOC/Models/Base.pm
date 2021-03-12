@@ -1,7 +1,8 @@
 package GrokLOC::Models::Base;
 use strictures 2;
-use Moo;
+use Moo::Role;
 use Types::Standard qw(Object Str);
+use GrokLOC::Models::Meta;
 
 # ABSTRACT: Base model inherited by other models.
 
@@ -14,7 +15,7 @@ has id => (
     required => 1,
 );
 
-has meta => (
+has _meta => (
     is       => 'ro',
     isa      => Object->where('$_->isa("GrokLOC::Models::Meta")'),
     required => 1,

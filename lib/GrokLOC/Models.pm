@@ -14,10 +14,15 @@ Readonly::Scalar our $STATUS_ACTIVE      => 1;
 Readonly::Scalar our $STATUS_INACTIVE    => 2;
 Readonly::Scalar our $STATUS_ADMIN       => 4;
 
+Readonly::Scalar our $NO_OWNER => 'no.owner';
+
 our @EXPORT_OK =
-  qw($STATUS_UNCONFIRMED $STATUS_ACTIVE $STATUS_INACTIVE $STATUS_ADMIN);
-our %EXPORT_TAGS = ( all =>
-      [qw($STATUS_UNCONFIRMED $STATUS_ACTIVE $STATUS_INACTIVE $STATUS_ADMIN)] );
+  qw($STATUS_UNCONFIRMED $STATUS_ACTIVE $STATUS_INACTIVE $STATUS_ADMIN $NO_OWNER);
+our %EXPORT_TAGS = (
+    all => [
+        qw($STATUS_UNCONFIRMED $STATUS_ACTIVE $STATUS_INACTIVE $STATUS_ADMIN $NO_OWNER)
+    ]
+);
 
 1;
 
