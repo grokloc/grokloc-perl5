@@ -23,7 +23,7 @@ has master => (
 );
 
 has replicas => (
-    is  => 'rw',
+    is  => 'ro',
     isa => ( ArrayRef [Object] )->where(
         'GrokLOC::Security::Input::safe_objs($_,["Mojo::SQLite","Mojo::Pg"])'),
     required => 1,
@@ -55,8 +55,11 @@ has key => (
     required => 1,
 );
 
+# random_replica returns a random replica - the safe_objs call insures
+# that this list is not empty at construction.
 sub random_replica($self) {
-    
+    my @replicas = @{ $self->replicas };
+    return $replicas[ rand @replicas ];
 }
 
 1;
