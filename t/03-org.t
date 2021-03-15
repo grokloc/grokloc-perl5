@@ -85,21 +85,45 @@ my $read_org;
 
 ok(
     lives {
-        $read_org = $org->read( $st->random_replica(), $org->id );
+        $read_org =
+          GrokLOC::Models::Org->read( $st->random_replica(), $org->id );
     },
     'read'
 ) or note($@);
 
 is( $read_org->id, $org->id, 'read ok' );
 
+my $not_found;
+
 ok(
     lives {
-        $result = $org->read( $st->random_replica(), random_v4uuid );
+        $not_found =
+          GrokLOC::Models::Org->read( $st->random_replica(), random_v4uuid );
+    },
+    'read not found'
+) or note($@);
+
+isnt( defined($not_found), 1 );
+
+ok(
+    lives {
+        $result = $org->update_status( $st->master, $STATUS_ACTIVE );
+    },
+    'update status'
+) or note($@);
+
+is( $result, $RESPONSE_OK, 'update status ok' );
+
+ok(
+    lives {
+        $read_org =
+          GrokLOC::Models::Org->read( $st->random_replica(), $org->id );
     },
     'read'
 ) or note($@);
 
-is( $result, $RESPONSE_NOT_FOUND, 'not found' );
+is( $read_org->id,            $org->id,       'read ok' );
+is( $read_org->_meta->status, $STATUS_ACTIVE, 'confirm status' );
 
 done_testing;
 

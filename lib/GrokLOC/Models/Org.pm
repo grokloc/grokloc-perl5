@@ -76,6 +76,14 @@ sub TO_JSON($self) {
     };
 }
 
+# insert can be called after ->new. Call like:
+# try {
+#     $result = $org->insert( $master );
+#     die 'insert failed' unless $result == $RESPONSE_OK;
+# }
+# catch ($e) {
+#     ...unknown error
+# }
 sub insert ( $self, $master ) {
     croak 'bad db ref'
       unless safe_objs( [$master], [ 'Mojo::SQLite', 'Mojo::Pg' ] );
@@ -98,12 +106,24 @@ sub insert ( $self, $master ) {
     return $RESPONSE_OK;
 }
 
-sub read ( $self, $c, $id ) {
+# read is a static method for creating a new Org from an existing row.
+# Call like: ;
+# try {
+#     $org = GrokLOC::Models::Org->read( $dbo, $id );
+#     ...$org is undef if the row isn't found.
+# }
+# catch ($e) {
+#     ...otherwise unknown error
+# }
+sub read ( $pkg, $dbo, $id ) {
+    croak 'call like: ' . __PACKAGE__ . '->read( $dbo, $id )'
+      unless $pkg eq __PACKAGE__;
     croak 'bad db ref'
-      unless safe_objs( [$c], [ 'Mojo::SQLite', 'Mojo::Pg' ] );
-    my $v = $c->db->select( $TABLENAME, [qw{*}], { id => $id } )->hash;
-    return $RESPONSE_NOT_FOUND unless ( defined $v );
-    return $self->new(
+      unless safe_objs( [$dbo], [ 'Mojo::SQLite', 'Mojo::Pg' ] );
+    croak 'bad id' unless safe_str($id);
+    my $v = $dbo->db->select( $TABLENAME, [qw{*}], { id => $id } )->hash;
+    return unless ( defined $v );    # Not found.
+    return $pkg->new(
         id    => $v->{id},
         name  => $v->{name},
         owner => $v->{owner},
@@ -113,6 +133,10 @@ sub read ( $self, $c, $id ) {
             status => $v->{status}
         )
     );
+}
+
+sub update_status ( $self, $master, $status ) {
+    return $self->_update_status( $master, $TABLENAME, $self->id, $status );
 }
 
 1;
