@@ -19,14 +19,7 @@ has status => (
     default  => $STATUS_UNCONFIRMED,
 );
 
-has ctime => (
-    is       => 'ro',
-    isa      => Int->where('GrokLOC::Security::Input::safe_unixtime $_'),
-    required => 0,
-    default  => 0,
-);
-
-has mtime => (
+has [qw(ctime mtime)] => (
     is       => 'ro',
     isa      => Int->where('GrokLOC::Security::Input::safe_unixtime $_'),
     required => 0,

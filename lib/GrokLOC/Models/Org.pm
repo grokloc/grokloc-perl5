@@ -44,8 +44,8 @@ around BUILDARGS => sub ( $orig, $class, @args ) {
 
     # New. Owner will be set to the default.
     if ( 1 == $len ) {
-        croak 'missing key name in new org constructor'
-          if ( !exists $kv{name} );
+        croak 'missing/malformed key name in new org constructor'
+          unless ( exists $kv{name} && safe_str( $kv{name} ) );
         return {
             id    => random_v4uuid,
             name  => $kv{name},
@@ -100,7 +100,7 @@ sub insert ( $self, $master ) {
         );
     }
     catch ($e) {
-        return $RESPONSE_CONFLICT if ( $e =~ /unique/ims );
+        return $RESPONSE_CONFLICT if ( $e =~ /unique/imsx );
         croak 'uncaught: ' . $e;
     };
     return $RESPONSE_OK;

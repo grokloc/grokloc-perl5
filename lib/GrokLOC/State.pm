@@ -38,7 +38,7 @@ has cache => (
 
 has kdf_iterations => (
     is       => 'ro',
-    isa      => Int->where('$_ > 0 && $_ < 32'),
+    isa      => Int->where('0 < $_ < 232'),
     required => 1,
 );
 

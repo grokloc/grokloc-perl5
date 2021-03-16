@@ -22,7 +22,8 @@ is( $plain, $decrypted );
 
 my $salt    = salt(random_v4uuid);
 my $derived = kdf( $plain, $salt, 1 );
-is( $derived, kdf( $plain, $salt, 1 ) );
+is( kdf_verify( $derived, $plain ), 1 );
+isnt( kdf_verify( $derived, random_v4uuid ), 1 );
 
 done_testing;
 

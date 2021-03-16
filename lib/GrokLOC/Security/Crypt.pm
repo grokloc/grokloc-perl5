@@ -1,8 +1,8 @@
 package GrokLOC::Security::Crypt;
 use strictures 2;
 use Carp qw(croak);
+use Crypt::Argon2 qw/argon2id_pass argon2id_verify/;
 use Crypt::Digest::SHA256 qw(sha256_b64);
-use Crypt::KeyDerivation qw(pbkdf2);
 use Crypt::Misc qw(encode_b64 decode_b64);
 use Readonly;
 use experimental qw(signatures);
@@ -14,7 +14,7 @@ our $AUTHORITY = 'cpan:bclawsie';
 
 use base qw(Exporter);
 
-Readonly::Scalar our $SALT_LEN => 8;
+Readonly::Scalar our $SALT_LEN => 16;
 Readonly::Scalar our $IV_LEN   => 16;
 Readonly::Scalar our $KEY_LEN  => 32;
 
@@ -47,14 +47,22 @@ sub salt($salt) {
     return substr sha256_b64($salt), 0, $SALT_LEN;
 }
 
-sub kdf ( $pw, $salt, $iterations ) {
-    return encode_b64( pbkdf2( $pw, $salt, $iterations ) );
+sub kdf ( $pw, $salt, $t_cost ) {
+    croak 't_cost must be between 1 and 231' if !( 0 < $t_cost < 232 );
+    return argon2id_pass( $pw, $salt, $t_cost, '32M', 1, 16 );
 }
 
-our @EXPORT_OK = qw($SALT_LEN $IV_LEN $KEY_LEN iv key encrypt decrypt salt kdf);
+sub kdf_verify ( $encoded, $pw ) {
+    return argon2id_verify( $encoded, $pw );
+}
+
+our @EXPORT_OK =
+  qw($SALT_LEN $IV_LEN $KEY_LEN iv key encrypt decrypt salt kdf kdf_verify);
 our %EXPORT_TAGS = (
     lens => [qw($SALT_LEN $IV_LEN $KEY_LEN)],
-    all  => [qw($SALT_LEN $IV_LEN $KEY_LEN iv key encrypt decrypt salt kdf)]
+    all  => [
+        qw($SALT_LEN $IV_LEN $KEY_LEN iv key encrypt decrypt salt kdf kdf_verify)
+    ]
 );
 
 1;
@@ -81,6 +89,6 @@ decrypt - Symmetric decryption.
 
 salt - Derive the salt for the kdf.
 
-kdf - Password hashing using PBKDF2.
+kdf - Password hashing using Argon2.
 
 =cut
