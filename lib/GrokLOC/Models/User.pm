@@ -5,6 +5,7 @@ use Crypt::Digest::SHA256 qw(sha256_b64);
 use Crypt::Misc qw(random_v4uuid);
 use Moo;
 use Readonly;
+use Syntax::Keyword::Try qw(try catch :experimental);
 use Types::Standard qw(Str);
 use experimental qw(signatures);
 use GrokLOC::Models qw(:all);
@@ -43,10 +44,11 @@ around BUILDARGS => sub ( $orig, $class, @args ) {
     if ( 6 == $len ) {
         for my $k (qw(display email org password key)) {
             croak "missing/malformed key $k new user constructor"
-              unless ( exists $kv{$k} && safe_string( $kv{$k} ) );
+              unless ( exists $kv{$k} && safe_str( $kv{$k} ) );
         }
         croak 'missing/malformed kdf iterations'
-          unless ( exists $kv{iterations} && $kv{iterations} =~ /^\d+$/imsx );
+          unless ( exists $kv{kdf_iterations}
+            && $kv{kdf_iterations} =~ /^\d+$/imsx );
         my ( $id, $api_secret ) = ( random_v4uuid, random_v4uuid );
         return {
             id         => $id,
@@ -57,8 +59,8 @@ around BUILDARGS => sub ( $orig, $class, @args ) {
             email          => encrypt( $kv{email}, key( $kv{key} ), iv($id) ),
             email_digest   => sha256_b64( $kv{email} ),
             org            => $kv{org},
-            password       => kdf( $kv{password}, salt($id), $kv{iterations} ),
-            _meta          => GrokLOC::Models::Meta->new(),
+            password => kdf( $kv{password}, salt($id), $kv{kdf_iterations} ),
+            _meta    => GrokLOC::Models::Meta->new(),
         };
     }
 
@@ -79,6 +81,96 @@ around BUILDARGS => sub ( $orig, $class, @args ) {
 
     return \%kv;
 };
+
+sub TO_JSON($self) {
+    return {
+        id                => $self->id,
+        api_secret        => $self->api_secret,
+        api_secret_digest => $self->api_secret_digest,
+        display           => $self->display,
+        display_digest    => $self->display_digest,
+        email             => $self->email,
+        email_digest      => $self->email_digest,
+        org               => $self->org,
+        password          => $self->password,
+        _meta             => $self->_meta->TO_JSON(),
+    };
+}
+
+# insert can be called after ->new. Call like:
+# try {
+#     $result = $org->insert( $master );
+#     die 'insert failed' unless $result == $RESPONSE_OK;
+# }
+# catch ($e) {
+#     ...unknown error
+# }
+sub insert ( $self, $master ) {
+    croak 'bad db ref'
+      unless safe_objs( [$master], [ 'Mojo::SQLite', 'Mojo::Pg' ] );
+    try {
+        $master->db->insert(
+            $TABLENAME,
+            {
+                id                => $self->id,
+                api_secret        => $self->api_secret,
+                api_secret_digest => $self->api_secret_digest,
+                display           => $self->display,
+                display_digest    => $self->display_digest,
+                email             => $self->email,
+                email_digest      => $self->email_digest,
+                org               => $self->org,
+                password          => $self->password,
+                status            => $self->_meta->status,
+                version           => $SCHEMA_VERSION,
+            }
+        );
+    }
+    catch ($e) {
+        return $RESPONSE_CONFLICT if ( $e =~ /unique/imsx );
+        croak 'uncaught: ' . $e;
+    };
+    return $RESPONSE_OK;
+}
+
+# read is a static method for creating a new Org from an existing row.
+# Call like: ;
+# try {
+#     $user = GrokLOC::Models::User->read( $dbo, $id );
+#     ...$user is undef if the row isn't found.
+# }
+# catch ($e) {
+#     ...otherwise unknown error
+# }
+sub read ( $pkg, $dbo, $id ) {
+    croak 'call like: ' . __PACKAGE__ . '->read( $dbo, $id )'
+      unless $pkg eq __PACKAGE__;
+    croak 'bad db ref'
+      unless safe_objs( [$dbo], [ 'Mojo::SQLite', 'Mojo::Pg' ] );
+    croak 'bad id' unless safe_str($id);
+    my $v = $dbo->db->select( $TABLENAME, [qw{*}], { id => $id } )->hash;
+    return unless ( defined $v );    # Not found.
+    return $pkg->new(
+        id                => $v->{id},
+        api_secret        => $v->{api_secret},
+        api_secret_digest => $v->{api_secret_digest},
+        display           => $v->{display},
+        display_digest    => $v->{display_digest},
+        email             => $v->{email},
+        email_digest      => $v->{email_digest},
+        org               => $v->{org},
+        password          => $v->{password},
+        _meta             => GrokLOC::Models::Meta->new(
+            ctime  => $v->{ctime},
+            mtime  => $v->{mtime},
+            status => $v->{status}
+        )
+    );
+}
+
+sub update_status ( $self, $master, $status ) {
+    return $self->_update_status( $master, $TABLENAME, $self->id, $status );
+}
 
 1;
 
