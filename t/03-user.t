@@ -1,5 +1,6 @@
 package main;
 use strictures 2;
+use Carp qw(croak);
 use Crypt::Misc qw(random_v4uuid);
 use Mojo::JSON qw(decode_json encode_json);
 use Test2::V0;
@@ -7,6 +8,7 @@ use Test2::Tools::Exception;
 use GrokLOC::Env qw(:all);
 use GrokLOC::State::Init qw(:all);
 use GrokLOC::Models qw(:all);
+use GrokLOC::Models::Org;
 use GrokLOC::Models::User;
 
 my $st;
@@ -16,6 +18,14 @@ ok(
         $st = state_init($UNIT);
     }
 ) or note($@);
+
+# User db operations will do a referential integrity check on the org,
+# so create one here.
+my $org    = GrokLOC::Models::Org->new( name => random_v4uuid );
+my $result = $org->insert( $st->master );
+croak 'insert org' unless ( $result == $RESPONSE_OK );
+$result = $org->update_status( $st->master, $STATUS_ACTIVE );
+croak 'update org status' unless ( $result == $RESPONSE_OK );
 
 my $user;
 
@@ -27,7 +37,7 @@ ok(
         $user = GrokLOC::Models::User->new(
             display        => $display,
             email          => $email,
-            org            => random_v4uuid,
+            org            => $org->id,
             password       => $password,
             key            => $st->key,
             kdf_iterations => $st->kdf_iterations,
@@ -80,8 +90,6 @@ ok(
 ) or note($@);
 
 is( $rt->id, $user->id, 'id round trip' );
-
-my $result;
 
 ok(
     lives {

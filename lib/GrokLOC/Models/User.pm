@@ -22,7 +22,7 @@ our $AUTHORITY = 'cpan:bclawsie';
 with 'GrokLOC::Models::Base';
 
 Readonly::Scalar our $SCHEMA_VERSION => 0;
-Readonly::Scalar our $TABLENAME      => 'users';
+Readonly::Scalar our $TABLENAME      => $USERS_TABLENAME;
 
 has [
     qw(api_secret api_secret_digest display display_digest email email_digest org password)
@@ -108,6 +108,13 @@ sub TO_JSON($self) {
 sub insert ( $self, $master ) {
     croak 'bad db ref'
       unless safe_objs( [$master], [ 'Mojo::SQLite', 'Mojo::Pg' ] );
+
+    # Verify that the org is in the db and active.
+    my $v =
+      $master->db->select( $ORGS_TABLENAME, [qw{*}], { id => $self->org } )
+      ->hash;
+    return $RESPONSE_ORG_ERR
+      unless ( defined $v ) && ( $v->{status} == $STATUS_ACTIVE );
     try {
         $master->db->insert(
             $TABLENAME,

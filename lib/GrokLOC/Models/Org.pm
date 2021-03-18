@@ -20,7 +20,7 @@ our $AUTHORITY = 'cpan:bclawsie';
 with 'GrokLOC::Models::Base';
 
 Readonly::Scalar our $SCHEMA_VERSION => 0;
-Readonly::Scalar our $TABLENAME      => 'orgs';
+Readonly::Scalar our $TABLENAME      => $ORGS_TABLENAME;
 
 has name => (
     is       => 'ro',
@@ -122,7 +122,7 @@ sub read ( $pkg, $dbo, $id ) {
       unless safe_objs( [$dbo], [ 'Mojo::SQLite', 'Mojo::Pg' ] );
     croak 'bad id' unless safe_str($id);
     my $v = $dbo->db->select( $TABLENAME, [qw{*}], { id => $id } )->hash;
-    return unless ( defined $v );    # Not found.
+    return unless ( defined $v );    # Not found.w
     return $pkg->new(
         id    => $v->{id},
         name  => $v->{name},
