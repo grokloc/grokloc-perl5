@@ -58,6 +58,10 @@ critic:
 tidy:
 	$(RUN) make ci-tidy
 
+# Run all the checkin preconditions.
+.PHONY: all
+all: check test tidy critic
+
 # Perl syntax check.
 .PHONY: ci-check
 ci-check:

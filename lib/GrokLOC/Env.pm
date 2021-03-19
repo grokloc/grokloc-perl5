@@ -21,7 +21,7 @@ Readonly::Scalar our $DEV   => 'DEV';
 Readonly::Scalar our $STAGE => 'STAGE';
 Readonly::Scalar our $PROD  => 'PROD';
 
-our @LEVELS = ( $UNIT, $DEV, $STAGE, $PROD );
+Readonly::Array our @LEVELS => ( $UNIT, $DEV, $STAGE, $PROD );
 
 our @EXPORT_OK =
   qw($GROKLOC_ENV $ROOT_ORG $ENCRYPT_KEY $SIGN_KEY $UNIT $DEV $STAGE $PROD @LEVELS);
