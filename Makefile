@@ -33,10 +33,10 @@ docker-dev: docker-ci
 shell:
 	$(RUN) /bin/bash
 
-# Perl repl in container.
-.PHONY: perl
-perl:
-	$(RUN) perl -I$(BASE)/lib -Mv5.32 -MData::Dumper -Mexperimental -Mstrict -de 0
+# Perl re.pl in container.
+.PHONY: re.pl
+re.pl:
+	$(RUN) re.pl
 
 # Perl syntax check in container.
 .PHONY: check

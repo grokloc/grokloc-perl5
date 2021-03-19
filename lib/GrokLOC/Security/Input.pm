@@ -31,7 +31,6 @@ sub safe_objs ( $objs, $classes ) {
 sub safe_str($s) {
     return if length $s == 0;
     return if length $s > $STR_MAX;
-    return if ( $s =~ /select|drop|update|trunc|eval|echo/gimsx );
     return if ( $s =~ /[\'\"\`]/msx );
     return 1;
 }

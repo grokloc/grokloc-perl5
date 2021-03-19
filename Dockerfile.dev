@@ -1,3 +1,5 @@
 FROM grokloc/grokloc-perl5:ci
-RUN apt-get update && apt-get -y install sqlite3
+RUN apt-get update && apt-get -y install sqlite3 libdevel-repl-perl
+RUN mkdir /root/.re.pl
+COPY .re.pl/repl.rc /root/.re.pl/.
 CMD ["tail", "-f", "/dev/null"]

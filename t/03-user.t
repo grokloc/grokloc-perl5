@@ -1,6 +1,7 @@
 package main;
 use strictures 2;
 use Carp qw(croak);
+use Crypt::Digest::SHA256 qw(sha256_b64);
 use Crypt::Misc qw(random_v4uuid);
 use Mojo::JSON qw(decode_json encode_json);
 use Test2::V0;
@@ -10,6 +11,7 @@ use GrokLOC::State::Init qw(:all);
 use GrokLOC::Models qw(:all);
 use GrokLOC::Models::Org;
 use GrokLOC::Models::User;
+use GrokLOC::Security::Crypt qw(:all);
 
 my $st;
 
@@ -109,6 +111,24 @@ ok(
 
 is( $result, $RESPONSE_CONFLICT, 'insert duplicate' );
 
+# org will not be found in db.
+ok(
+    lives {
+        my $bad_org_user = GrokLOC::Models::User->new(
+            display        => $display,
+            email          => $email,
+            org            => random_v4uuid,
+            password       => $password,
+            key            => $st->key,
+            kdf_iterations => $st->kdf_iterations,
+        );
+        $result = $bad_org_user->insert( $st->master );
+    },
+    'bad org user'
+) or note($@);
+
+is( $result, $RESPONSE_ORG_ERR, 'insert with bad org' );
+
 my $read_user;
 
 ok(
@@ -132,6 +152,57 @@ ok(
 ) or note($@);
 
 isnt( defined($not_found), 1 );
+
+my $new_display = random_v4uuid;
+
+ok(
+    lives {
+        $result = $user->update_display( $st->master, $new_display );
+    },
+    'update password'
+) or note($@);
+
+is( $result, $RESPONSE_OK, 'update display ok' );
+
+ok(
+    lives {
+        $read_user =
+          GrokLOC::Models::User->read( $st->random_replica(), $user->id );
+    },
+    'read'
+) or note($@);
+
+is( $read_user->display, $new_display, 'update display' );
+is(
+    $read_user->display_digest,
+    sha256_b64($new_display),
+    'update display digest'
+);
+
+my $new_password = random_v4uuid;
+
+ok(
+    lives {
+        $result = $user->update_password( $st->master, $new_password,
+            $st->kdf_iterations );
+    },
+    'update password'
+) or note($@);
+
+is( $result, $RESPONSE_OK, 'update password ok' );
+
+ok(
+    lives {
+        $read_user =
+          GrokLOC::Models::User->read( $st->random_replica(), $user->id );
+    },
+    'read'
+) or note($@);
+
+is( kdf_verify( $read_user->password, $new_password ),
+    1, 'verify new password' );
+isnt( kdf_verify( $read_user->password, random_v4uuid ),
+    1, 'not-verify wrong password' );
 
 ok(
     lives {

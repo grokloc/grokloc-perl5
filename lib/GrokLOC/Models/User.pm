@@ -175,6 +175,26 @@ sub read ( $pkg, $dbo, $id ) {
     );
 }
 
+sub update_display ( $self, $master, $display ) {
+    croak 'malformed display' unless safe_str($display);
+    return $self->_update(
+        $master,
+        $TABLENAME,
+        $self->id,
+        {
+            display        => $display,
+            display_digest => sha256_b64($display)
+        }
+    );
+}
+
+sub update_password ( $self, $master, $password, $kdf_iterations ) {
+    croak 'malformed password' unless safe_str($password);
+    my $derived = kdf( $password, salt( $self->id ), $kdf_iterations );
+    return $self->_update( $master, $TABLENAME, $self->id,
+        { password => $derived } );
+}
+
 sub update_status ( $self, $master, $status ) {
     return $self->_update_status( $master, $TABLENAME, $self->id, $status );
 }
