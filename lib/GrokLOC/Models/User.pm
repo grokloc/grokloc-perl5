@@ -106,7 +106,7 @@ sub TO_JSON($self) {
 #     ...unknown error
 # }
 sub insert ( $self, $master ) {
-    croak 'bad db ref'
+    croak 'db ref'
       unless safe_objs( [$master], [ 'Mojo::SQLite', 'Mojo::Pg' ] );
 
     # Verify that the org is in the db and active.
@@ -152,9 +152,9 @@ sub insert ( $self, $master ) {
 sub read ( $pkg, $dbo, $id ) {
     croak 'call like: ' . __PACKAGE__ . '->read( $dbo, $id )'
       unless $pkg eq __PACKAGE__;
-    croak 'bad db ref'
+    croak 'db ref'
       unless safe_objs( [$dbo], [ 'Mojo::SQLite', 'Mojo::Pg' ] );
-    croak 'bad id' unless safe_str($id);
+    croak 'malformed id' unless safe_str($id);
     my $v = $dbo->db->select( $TABLENAME, [qw{*}], { id => $id } )->hash;
     return unless ( defined $v );    # Not found.
     return $pkg->new(

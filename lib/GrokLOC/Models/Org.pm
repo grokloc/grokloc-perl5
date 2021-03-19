@@ -85,7 +85,7 @@ sub TO_JSON($self) {
 #     ...unknown error
 # }
 sub insert ( $self, $master ) {
-    croak 'bad db ref'
+    croak 'db ref'
       unless safe_objs( [$master], [ 'Mojo::SQLite', 'Mojo::Pg' ] );
     try {
         $master->db->insert(
@@ -118,9 +118,9 @@ sub insert ( $self, $master ) {
 sub read ( $pkg, $dbo, $id ) {
     croak 'call like: ' . __PACKAGE__ . '->read( $dbo, $id )'
       unless $pkg eq __PACKAGE__;
-    croak 'bad db ref'
+    croak 'db ref'
       unless safe_objs( [$dbo], [ 'Mojo::SQLite', 'Mojo::Pg' ] );
-    croak 'bad id' unless safe_str($id);
+    croak 'malformed id' unless safe_str($id);
     my $v = $dbo->db->select( $TABLENAME, [qw{*}], { id => $id } )->hash;
     return unless ( defined $v );    # Not found.w
     return $pkg->new(
@@ -133,6 +133,20 @@ sub read ( $pkg, $dbo, $id ) {
             status => $v->{status}
         )
     );
+}
+
+sub update_owner ( $self, $master, $owner ) {
+    croak 'db ref'
+      unless safe_objs( [$master], [ 'Mojo::SQLite', 'Mojo::Pg' ] );
+    croak 'malformed owner' unless safe_str($owner);
+    my $v =
+      $master->db->select( $USERS_TABLENAME, [qw{*}], { id => $owner } )->hash;
+    return $RESPONSE_USER_ERR
+      unless ( defined $v )
+      && ( $v->{status} == $STATUS_ACTIVE )
+      && ( $v->{org} eq $self->id );
+    return $self->_update( $master, $TABLENAME, $self->id,
+        { owner => $owner } );
 }
 
 sub update_status ( $self, $master, $status ) {
