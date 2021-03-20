@@ -9,6 +9,7 @@ variables:
   APP_PORT: "3000"
   ROOT_ORG: "d136966b-4ec6-420d-b105-574cb71bd45e"
   ROOT_USER: "77d3fb2b-949f-42ea-a8c1-a1e823db0883"
+  ROOT_USER_API_SECRET: "aca4e40e-4a1e-417f-afa5-befbe00807eb"
   CI: "1"
   
 default:

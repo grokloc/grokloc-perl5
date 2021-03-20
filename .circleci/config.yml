@@ -13,6 +13,7 @@ jobs:
       APP_PORT: "3000"
       ROOT_ORG: "54e6668d-759a-424c-a995-b2b2a9107806"
       ROOT_USER: "04881eb2-b417-4f9c-ad5d-adc8c4c23f65"
+      ROOT_USER_API_SECRET: "d08478c4-1d9c-449b-9aaa-0c26e0b84aae"
       CI: "1"
     working_directory: /grokloc
     steps:

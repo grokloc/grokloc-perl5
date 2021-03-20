@@ -27,9 +27,14 @@ sub init() {
     $master->migrations->name('app')->from_string($GrokLOC::Schemas::APP);
     $master->migrations->migrate(0)->migrate || croak "migrate: $ERRNO";
 
+    my $kdf_iterations = 1;
+    my $key            = key(random_v4uuid);
+
     # Set up the initial test root org and user. Tests need these.
     my $root_org  = $ENV{ROOT_ORG}  // croak 'unit env root org';
     my $root_user = $ENV{ROOT_USER} // croak 'unit env root user';
+    my $root_user_api_secret = $ENV{ROOT_USER_API_SECRET}
+      // croak 'unit env root user api secret';
 
     # Insert root org/user without calling the Model packages - those require
     # an initialized State instance, which isn't ready yet.
@@ -43,18 +48,18 @@ sub init() {
         }
     );
 
-    my $kdf_iterations = 1;
-    my ( $api_secret, $display, $email, $password ) =
-      ( random_v4uuid, random_v4uuid, random_v4uuid, random_v4uuid );
+    my ( $display, $email, $password ) =
+      ( random_v4uuid, random_v4uuid, random_v4uuid );
     $master->db->insert(
         $USERS_TABLENAME,
         {
-            id                => $root_user,
-            api_secret        => $api_secret,
-            api_secret_digest => sha256_b64($api_secret),
-            display           => $display,
+            id => $root_user,
+            api_secret =>
+              encrypt( $root_user_api_secret, $key, iv($root_user) ),
+            api_secret_digest => sha256_b64($root_user_api_secret),
+            display           => encrypt( $display, $key, iv($root_user) ),
             display_digest    => sha256_b64($display),
-            email             => $email,
+            email             => encrypt( $email, $key, iv($root_user) ),
             email_digest      => sha256_b64($email),
             org               => $root_org,
             password => kdf( $password, salt($root_user), $kdf_iterations ),
@@ -68,7 +73,7 @@ sub init() {
         cache          => Test::Mock::Redis->new( server => $UNIT ),
         kdf_iterations => $kdf_iterations,
         root_org       => $root_org,
-        key            => key(random_v4uuid),
+        key            => $key,
     );
 }
 
