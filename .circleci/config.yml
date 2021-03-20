@@ -11,6 +11,8 @@ jobs:
       GROKLOC_ENV: "UNIT"      
       APP_HOST: "localhost"
       APP_PORT: "3000"
+      ROOT_ORG: "54e6668d-759a-424c-a995-b2b2a9107806"
+      ROOT_USER: "04881eb2-b417-4f9c-ad5d-adc8c4c23f65"
       CI: "1"
     working_directory: /grokloc
     steps:
