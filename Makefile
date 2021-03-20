@@ -12,7 +12,7 @@ BASE         = /grokloc
 TIDY         = perltidy
 CRITIC_ARGS  =
 TCRITIC_ARGS = --theme=tests
-LIBS         = $(shell find lib -type f -name \*pm)
+LIBS         = $(shell find . -type f -name \*pm)
 LIB_TESTS    = $(shell find t -type f)
 APP_TESTS    = $(shell if [ -d service/app/t ]; then find service/app/t -type f; fi)
 APP_MAIN     = service/app/script/app
@@ -48,15 +48,15 @@ check:
 test:
 	$(RUN) make ci-test
 
-# Perlcritic in container.
-.PHONY: critic
-critic:
-	$(RUN) make ci-critic
-
 # Perltidy in container.
 .PHONY: tidy
 tidy:
 	$(RUN) make ci-tidy
+
+# Perlcritic in container.
+.PHONY: critic
+critic:
+	$(RUN) make ci-critic
 
 # Run all the checkin preconditions.
 .PHONY: all
@@ -73,15 +73,15 @@ ci-check:
 ci-test:
 	$(TEST_RUNNER) $(LIB_TESTS) $(APP_TESTS)
 
-# Perlcritic.
-.PHONY: ci-critic
-ci-critic:
-	perlcritic $(CRITIC_ARGS) $(LIBS)
-	perlcritic $(TCRITIC_ARGS) $(LIB_TESTS)
-
 # Perltidy.
 .PHONY: ci-tidy
 ci-tidy:
 	find -name \*.pm -print0 | xargs -0 $(TIDY) -b
 	find -name \*.t -print0 | xargs -0 $(TIDY) -b
 	find -name \*bak -delete
+
+# Perlcritic.
+.PHONY: ci-critic
+ci-critic:
+	perlcritic $(CRITIC_ARGS) $(LIBS)
+	perlcritic $(TCRITIC_ARGS) $(LIB_TESTS)

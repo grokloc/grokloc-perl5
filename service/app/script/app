@@ -1,0 +1,15 @@
+#!/usr/bin/env perl
+
+use v5.32.0;    ## no critic (ValuesAndExpressions)
+use strictures 2;
+
+use Mojo::File qw(curfile);
+use lib curfile->dirname->sibling('lib')->to_string;
+use Mojolicious::Commands;
+
+# ABSTRACT: Mojo service entrypoint.
+
+our $VERSION   = '0.01';
+our $AUTHORITY = 'cpan:bclawsie';
+
+Mojolicious::Commands->start_app('App');

@@ -7,11 +7,11 @@ use Mojo::JSON qw(decode_json encode_json);
 use Test2::V0;
 use Test2::Tools::Exception;
 use GrokLOC::Env qw(:all);
-use GrokLOC::State::Init qw(:all);
 use GrokLOC::Models qw(:all);
 use GrokLOC::Models::Org;
 use GrokLOC::Models::User;
 use GrokLOC::Security::Crypt qw(:all);
+use GrokLOC::State::Init qw(state_init);
 
 my $st;
 
