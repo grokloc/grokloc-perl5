@@ -33,6 +33,7 @@ sub routes_init($self) {
             my $whatever = $c->param('whatever');
             $c->render(
                 app_msg( 404, { error => $whatever . ': not found' } ) );
+            return;
         }
     );
     return;
