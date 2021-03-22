@@ -4,15 +4,21 @@ use Mojo::Base 'Mojolicious::Controller';
 use Syntax::Keyword::Try qw(try catch :experimental);
 use experimental qw(signatures);
 use GrokLOC::App qw(:all);
+use GrokLOC::App::JWT qw(:all);
 use GrokLOC::Models qw(:all);
 use GrokLOC::Models::Org;
 use GrokLOC::Models::User;
+use GrokLOC::Security::Crypt qw(:all);
 
 # ABSTRACT: Auth middleware for populating the stash.
 
 our $VERSION   = '0.01';
 our $AUTHORITY = 'cpan:bclawsie';
 
+# with_session is a middleware that will fill the stash with user and org instances.
+# Subsequent chained handlers can be assured of a stashed user and org.
+# Subsequent chained handlers can be assured of a minumum auth level of $AUTH_USER.
+# See perldocs for more info.
 sub with_session( $c ) {
     $c->stash( $STASH_AUTH => $AUTH_NONE );
 
@@ -42,7 +48,8 @@ sub with_session( $c ) {
           GrokLOC::Models::Org->read( $c->st->random_replica(), $user->org );
     }
     catch ($e) {
-        $c->app->log->error( 'internal error reading org ' . $user->org );
+        $c->app->log->error(
+            'internal error reading org:' . $user->org . ': ' . $e );
         $c->render( app_msg( 500, { error => 'internal error' } ) );
         return;
     }
@@ -64,6 +71,46 @@ sub with_session( $c ) {
         # Need to fill in jwt libs.
     }
     $c->stash( $STASH_AUTH => $auth_level );
+    return 1;
+}
+
+sub new_token( $c ) {
+    my $token_request = $c->req->headers->header($X_GROKLOC_TOKEN_REQUEST);
+    unless ( defined $token_request ) {
+        $c->render(
+            app_msg( 400, { error => 'missing:' . $X_GROKLOC_TOKEN_REQUEST } )
+        );
+        return;
+    }
+    my $user = $c->stash($STASH_USER);
+    my $api_secret;
+    try {
+        $api_secret =
+          decrypt( $user->api_secret, key( $c->st->key ), iv( $user->id ) );
+    }
+    catch ($e) {
+        $c->app->log->error(
+            'cannot decrypt api_secret for user:' . $user->id . ': ' . $e );
+        $c->render( app_msg( 500, { error => 'internal error' } ) );
+        return;
+    }
+    unless ( verify_token_request( $token_request, $user->id, $api_secret ) ) {
+        $c->render( app_msg( 401, { error => 'bad token request' } ) );
+        return;
+    }
+    my $token;
+    try {
+        $token = encode_token( $user->id, key( $c->st->key ) );
+    }
+    catch ($e) {
+        $c->app->log->error(
+            'cannot encode token for user:' . $user->id . ': ' . $e );
+        $c->render( app_msg( 500, { error => 'internal error' } ) );
+        return;
+    }
+    $c->res->headers->header( $X_GROKLOC_TOKEN => $JWT_TYPE . q{ } . $token );
+    $c->render( app_msg( 200, { auth => 'presented' } ) );
+    $c->app->log->info( 'new token for user ' . $user->id );
     return 1;
 }
 
