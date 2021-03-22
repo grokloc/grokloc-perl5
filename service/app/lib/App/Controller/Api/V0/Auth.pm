@@ -60,7 +60,7 @@ sub with_session( $c ) {
     }
 
     if ( !$c->req->headers->header($X_GROKLOC_TOKEN) ) {
-
+        # Need to fill in jwt libs.
     }
     $c->stash( $STASH_AUTH => $auth_level );
     return 1;
