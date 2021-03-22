@@ -1,4 +1,4 @@
-package GrokLOC::Security::JWT;
+package GrokLOC::App::JWT;
 use strictures 2;
 use Crypt::Digest::SHA256 qw(sha256_b64);
 use Crypt::JWT qw(:all);
@@ -42,6 +42,7 @@ sub encode_token ( $id, $key ) {
 }
 
 sub decode_token ( $token, $key ) {
+
     # $token may come in as '$TOKEN_TYPE $val' if from a web context.
     if ( $token =~ /^$JWT_TYPE\s(\S+)/msx ) {
         $token = $1;
@@ -61,7 +62,7 @@ our @EXPORT_OK =
 our %EXPORT_TAGS = (
     all => [
         qw(encode_token_request verify_token_request encode_token decode_token $JWT_HEADER $JWT_TYPE $JWT_EXPIRATION)
-    ]
+    ],
 );
 
 1;
@@ -70,7 +71,7 @@ __END__
 
 =head1 NAME
 
-GrokLOC::Security::JWT
+GrokLOC::App::JWT
 
 =head1 SYNOPSIS
 

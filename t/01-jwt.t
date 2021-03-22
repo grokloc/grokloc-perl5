@@ -11,14 +11,27 @@ my $key        = random_v4uuid;
 my $api_secret = random_v4uuid;
 
 my $encoded_request;
-ok( lives { $encoded_request = encode_token_request( $id, $api_secret ) } )
-  or note($@);
+is( 1, 1, 'ok' );
+ok(
+    lives {
+        $encoded_request = encode_token_request( $id, $api_secret );
+    }
+) or note($@);
 is( 1, verify_token_request( $encoded_request, $id, $api_secret ) );
 
 my $jwt;
-ok( lives { $jwt = encode_token( $id, $key ) } ) or note($@);
+ok(
+    lives {
+        $jwt = encode_token( $id, $key )
+    }
+) or note($@);
+
 my $decoded;
-ok( lives { $decoded = decode_token( $jwt, $key ) } ) or note($@);
+ok(
+    lives {
+        $decoded = decode_token( $jwt, $key )
+    }
+) or note($@);
 ref_ok( $decoded, 'HASH' );
 
 done_testing;
