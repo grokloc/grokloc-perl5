@@ -1,5 +1,5 @@
 FROM grokloc/grokloc-perl5:ci
 RUN apt-get update && apt-get -y install sqlite3 libdevel-repl-perl
 RUN mkdir /root/.re.pl
-COPY .re.pl/repl.rc /root/.re.pl/.
+RUN echo "use v5.32;\nuse strictures 2;\nuse Data::Dumper;\nuse experimental qw(signatures switch);\n" > /root/.re.pl/repl.rc
 CMD ["tail", "-f", "/dev/null"]
