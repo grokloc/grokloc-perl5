@@ -5,6 +5,7 @@ use Syntax::Keyword::Try qw(try catch :experimental);
 use experimental qw(signatures);
 use GrokLOC::App qw(:all);
 use GrokLOC::App::JWT qw(:all);
+use GrokLOC::App::Message qw(app_msg);
 use GrokLOC::Models qw(:all);
 use GrokLOC::Models::Org;
 use GrokLOC::Models::User;
@@ -66,14 +67,20 @@ sub with_session( $c ) {
         $auth_level = $AUTH_ORG;
     }
 
-    if ( !$c->req->headers->header($X_GROKLOC_TOKEN) ) {
+    if ( $c->req->headers->header($X_GROKLOC_TOKEN) ) {
 
         # Need to fill in jwt libs.
     }
     $c->stash( $STASH_AUTH => $auth_level );
+    $c->stash( $STASH_ORG  => $org );
+    $c->stash( $STASH_USER => $user );
     return 1;
 }
 
+# new_token mints a new jwt for a user if the token request header
+# validates. Should be treated as a POST handler since a new jwt is always
+# minted, but note that unlike typical POSTs, there is no redirect or Location
+# header in the response, only the value of the jwt.
 sub new_token( $c ) {
     my $token_request = $c->req->headers->header($X_GROKLOC_TOKEN_REQUEST);
     unless ( defined $token_request ) {

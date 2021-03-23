@@ -12,20 +12,22 @@ use base qw(Exporter);
 
 Readonly::Scalar our $API                 => '/api';
 Readonly::Scalar our $API_VERSION         => '/v0';
+Readonly::Scalar our $API_ROUTE           => $API . $API_VERSION;
 Readonly::Scalar our $OK                  => '/ok';
-Readonly::Scalar our $OK_ROUTE            => $API . $VERSION . $OK;
+Readonly::Scalar our $OK_ROUTE            => $API_ROUTE . $OK;
 Readonly::Scalar our $TOKEN_REQUEST       => '/token';
-Readonly::Scalar our $TOKEN_REQUEST_ROUTE => $API . $VERSION . $TOKEN_REQUEST;
+Readonly::Scalar our $TOKEN_REQUEST_ROUTE => $API_ROUTE . $TOKEN_REQUEST;
 
-Readonly::Array our @ROUTES => ( $OK_ROUTE, $TOKEN_REQUEST_ROUTE );
+Readonly::Array our @ROUTES => ( $API_ROUTE, $OK_ROUTE, $TOKEN_REQUEST_ROUTE );
 
 our @EXPORT_OK =
-  qw($API $API_VERSION $OK $OK_ROUTE $TOKEN_REQUEST $TOKEN_REQUEST_ROUTE @ROUTES);
+  qw($API $API_VERSION $API_ROUTE $OK $OK_ROUTE $TOKEN_REQUEST $TOKEN_REQUEST_ROUTE @ROUTES);
 our %EXPORT_TAGS = (
     all => [
         qw(
           $API
           $API_VERSION
+          $API_ROUTE
           $OK
           $OK_ROUTE
           $TOKEN_REQUEST
@@ -35,6 +37,7 @@ our %EXPORT_TAGS = (
     ],
     routes => [
         qw(
+          $API_ROUTE
           $OK_ROUTE
           $TOKEN_REQUEST_ROUTE
           @ROUTES

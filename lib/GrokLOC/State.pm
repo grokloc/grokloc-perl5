@@ -50,7 +50,7 @@ has root_org => (
 
 has key => (
     is       => 'ro',
-    isa      => Str->where('length $_ == $GrokLOC::Security::Crypt::KEY_LEN'),
+    isa      => Str->where('GrokLOC::Security::Input::safe_str($_)'),
     required => 1,
 );
 

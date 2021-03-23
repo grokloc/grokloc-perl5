@@ -4,7 +4,7 @@ use Carp qw(croak);
 use Mojo::Base 'Mojolicious';
 use experimental qw(signatures);
 use GrokLOC::App::Message qw(app_msg);
-use GrokLOC::App::Routes qw(:routes);
+use GrokLOC::App::Routes qw(:all);
 use GrokLOC::Env qw(:all);
 use GrokLOC::State::Init qw(state_init);
 
@@ -27,6 +27,12 @@ sub routes_init($self) {
 
     # GET /ok -> ok, no auth.
     $r->get($OK_ROUTE)->to('api-v0-ok#ok');
+
+    # Everything under /api/v0 requires a user/org/auth session in the stash.
+    my $with_session = $r->under($API_ROUTE)->to('api-v0-auth#with_session');
+
+    # Request a new token.
+    $with_session->post($TOKEN_REQUEST)->to('api-v0-auth#new_token');
 
     $r->any(
         '/*whatever' => { whatever => q{} } => sub ($c) {
