@@ -9,7 +9,7 @@ UNIT_ENVS    = --env-file ./env/unit.env
 PORTS        = -p 3000:3000
 CWD          = $(shell pwd)
 BASE         = /grokloc
-TIDY         = perltidy
+TIDY         = perltidier
 CRITIC_ARGS  =
 TCRITIC_ARGS = --theme=tests
 LIBS         = $(shell find . -type f -name \*pm)
