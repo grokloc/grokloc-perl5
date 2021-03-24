@@ -7,13 +7,13 @@ use English qw(-no_match_vars);
 use File::Spec;
 use File::Temp qw(tempdir);
 use Mojo::SQLite;
-use Test::Mock::Redis;
 use experimental qw(signatures);
 use GrokLOC::Env qw(:all);
 use GrokLOC::Models qw(:all);
 use GrokLOC::Schemas;
 use GrokLOC::Security::Crypt qw(:all);
 use GrokLOC::State;
+use GrokLOC::State2;
 
 # ABSTRACT: Initialize a State instance for the environment.
 
@@ -68,10 +68,17 @@ sub init() {
         }
     );
 
-    return GrokLOC::State->new(
+    my $state2 = GrokLOC::State2->new(
         master         => $master,
         replicas       => [$master],
-        cache          => Test::Mock::Redis->new( server => $UNIT ),
+        kdf_iterations => $kdf_iterations,
+        root_org       => $root_org,
+        key            => $key,
+    );
+    
+    return GrokLOC::State2->new(
+        master         => $master,
+        replicas       => [$master],
         kdf_iterations => $kdf_iterations,
         root_org       => $root_org,
         key            => $key,

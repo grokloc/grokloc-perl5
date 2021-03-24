@@ -28,14 +28,6 @@ has replicas => (
     required => 1,
 );
 
-has cache => (
-    is  => 'ro',
-    isa => Object->where(
-'GrokLOC::Security::Input::safe_objs([$_],["Redis","Test::Mock::Redis"])'
-    ),
-    required => 1,
-);
-
 has kdf_iterations => (
     is       => 'ro',
     isa      => Int->where('0 < $_ < 232'),
