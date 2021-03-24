@@ -1,11 +1,14 @@
 package GrokLOC::State;
-use strictures 2;
 use Object::Pad;
+use strictures 2;
+use Carp qw(croak);
 use Mojo::SQLite;
 use experimental qw(signatures);
 use GrokLOC::Security::Input qw(:validators);
 
 # ABSTRACT: Core state for the GrokLOC app.
+
+## no critic (RequireEndWithOne);
 
 our $VERSION   = '0.01';
 our $AUTHORITY = 'cpan:bclawsie';
@@ -19,30 +22,34 @@ class GrokLOC::State {
     has $key :reader;
 
     BUILD(%args) {
-        die 'invalid master'
+        croak 'invalid master'
           unless ( exists $args{master}
             && safe_objs( [ $args{master} ], [ 'Mojo::SQLite', 'Mojo::Pg' ] ) );
         $master = $args{master};
-        die 'invalid replicas'
+        croak 'invalid replicas'
           unless ( exists $args{replicas}
             && ref( $args{replicas} ) eq 'ARRAY'
             && safe_objs( $args{replicas}, [ 'Mojo::SQLite', 'Mojo::Pg' ] ) );
         @replicas = @{ $args{replicas} };
-        die 'invalid kdf iterations'
-          unless ( exists $args{kdf_iterations}
-            && $args{kdf_iterations} =~ /^\d+$/msx
-            && 0 < $args{kdf_iterations} < 232 );
+        croak 'invalid kdf iterations'
+          if (
+            !(
+                   exists $args{kdf_iterations}
+                && $args{kdf_iterations} =~ /^\d+$/msx
+                && 0 < $args{kdf_iterations} < 232
+            )
+          );
         $kdf_iterations = $args{kdf_iterations};
-        die 'invalid root_org'
+        croak 'invalid root_org'
           unless ( exists $args{root_org} && safe_str( $args{root_org} ) );
         $root_org = $args{root_org};
-        die 'invalid key'
+        croak 'invalid key'
           unless ( exists $args{key} && safe_str( $args{key} ) );
         $key = $args{key};
     }
 
     method random_replica {
-        return $replicas[ int rand( scalar @replicas ) ];
+        return $replicas[ int rand scalar @replicas ];
     }
 }
 
@@ -52,7 +59,7 @@ __END__
 
 =head1 NAME
 
-GrokLOC::State2
+GrokLOC::State
 
 =head1 SYNOPSIS
 

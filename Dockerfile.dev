@@ -4,4 +4,6 @@ RUN mkdir /root/.re.pl
 RUN echo "use v5.32;\nuse strictures 2;\nuse Data::Dumper;\nuse experimental qw(signatures switch);\n" > /root/.re.pl/repl.rc
 RUN cpanm -n Perl::Tidy::Sweetened && rm -rf /root/.cpanm/work
 RUN rm -f /root/.cpan/build.log && rm -f /root/.cpan/latest-build
+RUN apt-get -y autoremove
+RUN apt-get clean
 CMD ["tail", "-f", "/dev/null"]

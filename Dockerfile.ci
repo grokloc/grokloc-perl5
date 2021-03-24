@@ -8,7 +8,6 @@ RUN apt-get -y install \
     liblist-allutils-perl \
     libsyntax-keyword-try-perl \
     libperl-critic-perl \
-    perltidy \
     libdata-uuid-perl \
     libmultidimensional-perl \
     libindirect-perl \
@@ -21,7 +20,6 @@ RUN apt-get -y install \
     libdbi-perl \
     libdbd-sqlite3 \
     libdbd-sqlite3-perl \
-    libtest-mock-redis-perl \
     libcryptx-perl \
     libcrypt-jwt-perl \
     libmojo-sqlite-perl \
@@ -34,7 +32,7 @@ RUN apt-get -y install \
     libdist-zilla-perl \
     ca-certificates \
     build-essential
-RUN cpanm -n Mojo::Redis Test2::Harness Perl::Critic::TooMuchCode Dist::Zilla::Plugin::RewriteVersion Dist::Zilla::PluginBundle::Basic Mojolicious Crypt::Argon2 Object::Pad && rm -rf /root/.cpanm/work
+RUN cpanm -n Test2::Harness Perl::Critic::TooMuchCode Dist::Zilla::Plugin::RewriteVersion Dist::Zilla::PluginBundle::Basic Mojolicious Crypt::Argon2 Object::Pad && rm -rf /root/.cpanm/work
 RUN rm -f /root/.cpan/build.log && rm -f /root/.cpan/latest-build
 RUN apt-get -y purge build-essential
 RUN apt-get -y autoremove

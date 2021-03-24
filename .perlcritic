@@ -1,6 +1,7 @@
 severity = 1
 [ControlStructures::ProhibitPostfixControls]
 allow = for if unless
+[-CodeLayout::RequireTidyCode]
 [-ValuesAndExpressions::RequireInterpolationOfMetachars]
 [-ValuesAndExpressions::ProhibitLongChainsOfMethodCalls]
 [-Subroutines::ProhibitBuiltinHomonyms]
