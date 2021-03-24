@@ -13,7 +13,6 @@ use GrokLOC::Models qw(:all);
 use GrokLOC::Schemas;
 use GrokLOC::Security::Crypt qw(:all);
 use GrokLOC::State;
-use GrokLOC::State2;
 
 # ABSTRACT: Initialize a State instance for the environment.
 
@@ -68,15 +67,7 @@ sub init() {
         }
     );
 
-    my $state2 = GrokLOC::State2->new(
-        master         => $master,
-        replicas       => [$master],
-        kdf_iterations => $kdf_iterations,
-        root_org       => $root_org,
-        key            => $key,
-    );
-    
-    return GrokLOC::State2->new(
+    return GrokLOC::State->new(
         master         => $master,
         replicas       => [$master],
         kdf_iterations => $kdf_iterations,
