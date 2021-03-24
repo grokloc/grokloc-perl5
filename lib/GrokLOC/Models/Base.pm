@@ -1,7 +1,6 @@
 package GrokLOC::Models::Base;
 use strictures 2;
 use Carp qw(croak);
-use List::AllUtils qw(any);
 use Moo::Role;
 use Types::Standard qw(Object Str);
 use experimental qw(signatures);
@@ -26,7 +25,7 @@ has _meta => (
 );
 
 sub _update_status ( $self, $master, $tablename, $id, $status ) {
-    croak 'status invalid' unless ( any { $_ eq $status } @STATUSES );
+    croak 'status invalid' unless safe_status($status);
     return $self->_update( $master, $tablename, $id, { status => $status } );
 }
 
