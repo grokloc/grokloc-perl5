@@ -6,6 +6,7 @@ use Crypt::Misc qw(random_v4uuid);
 use experimental qw(signatures);
 use GrokLOC::Models qw(:all);
 use GrokLOC::Models::Meta2;
+use GrokLOC::Security::Input qw(:validators);
 
 # ABSTRACT: Base model inherited by other models.
 
