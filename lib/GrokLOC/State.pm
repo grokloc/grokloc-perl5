@@ -1,8 +1,7 @@
+use Object::Pad;
 package GrokLOC::State;
 use strictures 2;
 use Mojo::SQLite;
-use Moo;
-use Types::Standard qw(ArrayRef Int Object Str);
 use experimental qw(signatures);
 use GrokLOC::Env qw(:all);
 use GrokLOC::Security::Input qw(:validators);
@@ -13,43 +12,35 @@ use GrokLOC::Security::Crypt qw(:lens);
 our $VERSION   = '0.01';
 our $AUTHORITY = 'cpan:bclawsie';
 
-has master => (
-    is  => 'ro',
-    isa => Object->where(
-        'GrokLOC::Security::Input::safe_objs([$_],["Mojo::SQLite","Mojo::Pg"])'
-    ),
-    required => 1,
-);
+class GrokLOC::State {
 
-has replicas => (
-    is  => 'ro',
-    isa => ( ArrayRef [Object] )->where(
-        'GrokLOC::Security::Input::safe_objs($_,["Mojo::SQLite","Mojo::Pg"])'),
-    required => 1,
-);
+    has $master         :reader;
+    has @replicas;
+    has $kdf_iterations :reader;
+    has $root_org       :reader;
+    has $key            :reader;
 
-has kdf_iterations => (
-    is       => 'ro',
-    isa      => Int->where('0 < $_ < 232'),
-    required => 1,
-);
+    BUILD(%args) {
+        die 'invalid master' unless (exists $args{master} &&
+                                     safe_objs([$args{master}], ['Mojo::SQLite', 'Mojo::Pg']));
+        $master = $args{master};
+        die 'invalid replicas' unless (exists $args{replicas} &&
+                                       ref($args{replicas}) eq 'ARRAY' &&
+                                       safe_objs($args{replicas}, ['Mojo::SQLite', 'Mojo::Pg']));
+        @replicas = @{$args{replicas}};
+        die 'invalid kdf iterations' unless (exists $args{kdf_iterations} &&
+                                             $args{kdf_iterations} =~ /^\d+$/msx &&
+                                             0 < $args{kdf_iterations} < 232);
+        $kdf_iterations = $args{kdf_iterations};
+        die 'invalid root_org' unless (exists $args{root_org} && safe_str($args{root_org}));
+        $root_org = $args{root_org};
+        die 'invalid key' unless (exists $args{key} && safe_str($args{key}));
+        $key = $args{key};
+    }
 
-has root_org => (
-    is       => 'ro',
-    isa      => Str->where('length $_ != 0'),
-    required => 1,
-);
-
-has key => (
-    is       => 'ro',
-    isa      => Str->where('GrokLOC::Security::Input::safe_str($_)'),
-    required => 1,
-);
-
-# random_replica returns a random replica - the safe_objs call insures
-# that this list is not empty at construction.
-sub random_replica($self) {
-    return $self->replicas->[ int rand( scalar @{ $self->replicas } ) ];
+    method random_replica {
+        return $replicas[int rand(scalar @replicas)]
+    }
 }
 
 1;
@@ -58,7 +49,7 @@ __END__
 
 =head1 NAME
 
-GrokLOC::State
+GrokLOC::State2
 
 =head1 SYNOPSIS
 
