@@ -28,7 +28,7 @@ sub safe_objs ( $objs, $classes ) {
     return 1;
 }
 
-sub safe_str($s) {
+sub safe_str ($s) {
     return unless ( defined $s );
     return if length $s == 0;
     return if length $s > $STR_MAX;
@@ -36,13 +36,13 @@ sub safe_str($s) {
     return 1;
 }
 
-sub safe_strs($ar) {
+sub safe_strs ($ar) {
     return if ( !( ref($ar) eq 'ARRAY' ) );
     return if scalar @{$ar} == 0;
     return all { safe_str($_) } @{$ar};
 }
 
-sub safe_unixtime($t) {
+sub safe_unixtime ($t) {
     return unless ( defined $t );
     Readonly::Scalar my $DEC_31_2025 => 1_767_139_200;
     return if ( $t !~ /^\d+$/msx );

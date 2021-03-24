@@ -20,7 +20,7 @@ our $AUTHORITY = 'cpan:bclawsie';
 # Subsequent chained handlers can be assured of a stashed user and org.
 # Subsequent chained handlers can be assured of a minumum auth level of $AUTH_USER.
 # See perldocs for more info.
-sub with_session( $c ) {
+sub with_session ( $c ) {
     $c->stash( $STASH_AUTH => $AUTH_NONE );
 
     # The X-GrokLOC-ID header must be present in order to look up the user.
@@ -81,7 +81,7 @@ sub with_session( $c ) {
 # validates. Should be treated as a POST handler since a new jwt is always
 # minted, but note that unlike typical POSTs, there is no redirect or Location
 # header in the response, only the value of the jwt.
-sub new_token( $c ) {
+sub new_token ( $c ) {
     my $token_request = $c->req->headers->header($X_GROKLOC_TOKEN_REQUEST);
     unless ( defined $token_request ) {
         $c->render(

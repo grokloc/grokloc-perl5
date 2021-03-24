@@ -20,7 +20,7 @@ our $VERSION   = '0.01';
 our $AUTHORITY = 'cpan:bclawsie';
 
 # unit_init initializes a State instance for the Unit environment.
-sub init() {
+sub init () {
     my $db     = 'sqlite:' . File::Spec->catfile( tempdir, 'app.db' );
     my $master = Mojo::SQLite->new($db) || croak "new db: $ERRNO";
     $master->migrations->name('app')->from_string($GrokLOC::Schemas::APP);

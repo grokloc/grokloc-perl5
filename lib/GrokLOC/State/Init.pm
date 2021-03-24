@@ -13,7 +13,7 @@ our $AUTHORITY = 'cpan:bclawsie';
 
 use base qw(Exporter);
 
-sub state_init($level) {
+sub state_init ($level) {
     croak 'no valid level' unless ( any { $_ eq $level } @LEVELS );
     given ($level) {
         when ($UNIT) {

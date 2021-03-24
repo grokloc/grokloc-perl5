@@ -19,7 +19,7 @@ Readonly::Scalar our $STATUS_ADMIN       => 4;
 our @STATUSES =
   ( $STATUS_UNCONFIRMED, $STATUS_ACTIVE, $STATUS_INACTIVE, $STATUS_ADMIN );
 
-sub safe_status( $status ) {
+sub safe_status ( $status ) {
     return if ( $status !~ /^\d+$/msx );
     return if ( $status < $STATUS_UNCONFIRMED );
     return if ( $status > $STATUS_ADMIN );

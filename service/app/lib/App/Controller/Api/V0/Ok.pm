@@ -9,7 +9,7 @@ use GrokLOC::App::Message qw(app_msg);
 our $VERSION   = '0.01';
 our $AUTHORITY = 'cpan:bclawsie';
 
-sub ok( $c ) {
+sub ok ( $c ) {
     $c->render( app_msg( 200, { ping => 'ok' } ) );
     return 1;
 }

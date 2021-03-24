@@ -26,7 +26,7 @@ has [qw(ctime mtime)] => (
     default  => 0,
 );
 
-sub TO_JSON($self) {
+sub TO_JSON ($self) {
     return {
         status => $self->status,
         ctime  => $self->ctime,

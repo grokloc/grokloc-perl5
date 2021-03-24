@@ -18,12 +18,12 @@ Readonly::Scalar our $SALT_LEN => 16;
 Readonly::Scalar our $IV_LEN   => 16;
 Readonly::Scalar our $KEY_LEN  => 32;
 
-sub iv($iv) {
+sub iv ($iv) {
     croak 'iv zero len' if ( length $iv == 0 );
     return substr sha256_b64($iv), 0, $IV_LEN;
 }
 
-sub key($key) {
+sub key ($key) {
     croak 'key zero len' if ( length $key == 0 );
     return substr sha256_b64($key), 0, $KEY_LEN;
 }
@@ -42,7 +42,7 @@ sub decrypt ( $crypted, $key, $iv ) {
     return $cbc->decrypt( decode_b64($crypted), $key, $iv );
 }
 
-sub salt($salt) {
+sub salt ($salt) {
     croak 'salt zero len' if ( length $salt == 0 );
     return substr sha256_b64($salt), 0, $SALT_LEN;
 }

@@ -13,7 +13,7 @@ use GrokLOC::State::Init qw(state_init);
 our $VERSION   = '0.01';
 our $AUTHORITY = 'cpan:bclawsie';
 
-sub startup($self) {
+sub startup ($self) {
     my $level = $ENV{$GROKLOC_ENV} // croak 'level env';
     my $st    = state_init($level);
     $self->helper( st => sub( $self ) { return $st; } );
@@ -22,7 +22,7 @@ sub startup($self) {
     return;
 }
 
-sub routes_init($self) {
+sub routes_init ($self) {
     my $r = $self->routes;
 
     # GET /ok -> ok, no auth.

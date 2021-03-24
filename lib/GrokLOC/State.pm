@@ -12,11 +12,11 @@ our $AUTHORITY = 'cpan:bclawsie';
 
 class GrokLOC::State {
 
-    has $master : reader;
+    has $master :reader;
     has @replicas;
-    has $kdf_iterations : reader;
-    has $root_org       : reader;
-    has $key            : reader;
+    has $kdf_iterations :reader;
+    has $root_org :reader;
+    has $key :reader;
 
     BUILD(%args) {
         die 'invalid master'
@@ -42,7 +42,7 @@ class GrokLOC::State {
     }
 
     method random_replica {
-        return $replicas[ int rand( scalar @replicas ) ]
+        return $replicas[ int rand( scalar @replicas ) ];
     }
 }
 

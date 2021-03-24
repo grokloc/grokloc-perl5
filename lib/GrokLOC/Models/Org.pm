@@ -67,7 +67,7 @@ around BUILDARGS => sub ( $orig, $class, @args ) {
     return \%kv;
 };
 
-sub TO_JSON($self) {
+sub TO_JSON ($self) {
     return {
         id    => $self->id,
         name  => $self->name,
