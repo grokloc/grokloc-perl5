@@ -26,17 +26,14 @@ class GrokLOC::Models::Org2 extends GrokLOC::Models::Base2 {
     BUILD(%args) {
         croak 'missing/malformed name'
           unless ( exists $args{name} && safe_str( $args{name} ) );
-        my $len = scalar keys %args;
-        if ( 1 == $len ) {
+        $name  = $args{name};
+        $owner = $NO_OWNER;
 
-            # New. Owner will be set to the default.
-            $name  = $args{name};
-            $owner = $NO_OWNER;
-            return;
-        }
+        # If the only arg was the name,
+        # call parent constructor with default owner.
+        return if ( 1 == scalar keys %args );
 
         # Otherwise, populate with all args.
-        $name = $args{name};
         croak 'missing/malformed owner'
           unless ( exists $args{owner} && safe_str( $args{owner} ) );
         $owner = $args{owner};
