@@ -32,16 +32,17 @@ class GrokLOC::Models::Org2 extends GrokLOC::Models::Base2 {
             # New. Owner will be set to the default.
             $name  = $args{name};
             $owner = $NO_OWNER;
+            return;
         }
-        else {
-            # Otherwise, populate with all args.
-            $name = $args{name};
-            croak 'missing/malformed owner'
-              unless ( exists $args{owner} && safe_str( $args{owner} ) );
-            $owner = $args{owner};
 
-            # Parent constructor catches the rest.
-        }
+        # Otherwise, populate with all args.
+        $name = $args{name};
+        croak 'missing/malformed owner'
+          unless ( exists $args{owner} && safe_str( $args{owner} ) );
+        $owner = $args{owner};
+
+        # Parent constructor catches the rest.
+        return;
     }
 
     method TO_JSON {
