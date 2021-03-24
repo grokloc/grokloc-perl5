@@ -116,7 +116,7 @@ sub new_token( $c ) {
         return;
     }
     $c->res->headers->header( $X_GROKLOC_TOKEN => $JWT_TYPE . q{ } . $token );
-    $c->render( app_msg( 200, { auth => 'presented' } ) );
+    $c->render( status => 204, data => q{} );
     $c->app->log->info( 'new token for user ' . $user->id );
     return 1;
 }

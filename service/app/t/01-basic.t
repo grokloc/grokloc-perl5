@@ -43,8 +43,17 @@ $t->post_ok(
     }
 )->status_is(401);
 
-# my $api_secret = decrypt( $user->api_secret, key( $st->key ), iv( $user->id ) );
+# Unencrypted from env.
+my $root_user_api_secret = $ENV{ROOT_USER_API_SECRET}
+  // croak 'unit env root user api secret';
 
-# my $token_request = encode_token_request($user->id, $api_secret);
+my $token_request = encode_token_request( $root_user, $root_user_api_secret );
+
+$t->post_ok(
+    $TOKEN_REQUEST_ROUTE => {
+        $X_GROKLOC_ID            => $root_user,
+        $X_GROKLOC_TOKEN_REQUEST => $token_request,
+    }
+)->status_is(204);
 
 done_testing();
