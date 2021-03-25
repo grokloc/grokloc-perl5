@@ -1,7 +1,9 @@
 package GrokLOC::App::Client;
 use Object::Pad;
 use strictures 2;
+use Carp qw(croak);
 use experimental qw(signatures);
+use GrokLOC::Security::Input qw(:validators);
 
 # ABSTRACT: App client library.
 
@@ -10,8 +12,23 @@ use experimental qw(signatures);
 our $VERSION   = '0.01';
 our $AUTHORITY = 'cpan:bclawsie';
 
-class Client {
+class GrokLOC::App::Client {
+    has $url :reader;
+    has $id :reader;
+    has $api_secret :reader;
+    has $ua :reader;
 
+    BUILD(%args) {
+        for my $k (qw(url id api_secret)) {
+            croak "missing/malformed $k"
+              unless ( exists $args{$k} && safe_str( $args{$k} ) );
+        }
+        croak 'missing/malformed ua'
+          unless ( exists $args{ua}
+            && safe_obs( [ $args{ua} ], ['Mojo::UserAgent'] ) );
+        ( $url, $id, $api_secret, $ua ) =
+          ( $args{url}, $args{id}, $args{api_secret}, $args{ua} );
+    }
 }
 
 1;
