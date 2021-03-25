@@ -1,6 +1,7 @@
 package main;
 use strictures 2;
 use Crypt::Misc qw(random_v4uuid);
+use Mojo::JSON qw(decode_json encode_json);
 use Test2::V0;
 use Test2::Tools::Exception;
 use GrokLOC::Env qw(:all);
@@ -54,6 +55,18 @@ is( $org->name,        $name,                    'name' );
 is( $org->owner,       $owner,                   'owner' );
 is( $org->id,          $id,                      'id' );
 is( ref( $org->meta ), 'GrokLOC::Models::Meta2', 'meta' );
+
+my $rt;
+
+ok(
+    lives {
+        $rt =
+          GrokLOC::Models::Org2->new( %{ decode_json( encode_json($org) ) } );
+    },
+    'json round trip'
+) or note($@);
+
+is( $rt->id, $org->id, 'id round trip' );
 
 my $result;
 

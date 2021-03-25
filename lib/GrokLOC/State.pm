@@ -32,13 +32,8 @@ class GrokLOC::State {
             && safe_objs( $args{replicas}, [ 'Mojo::SQLite', 'Mojo::Pg' ] ) );
         @replicas = @{ $args{replicas} };
         croak 'invalid kdf iterations'
-          if (
-            !(
-                   exists $args{kdf_iterations}
-                && $args{kdf_iterations} =~ /^\d+$/msx
-                && 0 < $args{kdf_iterations} < 232
-            )
-          );
+          unless ( exists $args{kdf_iterations}
+            && safe_kdf_iterations( $args{kdf_iterations} ) );
         $kdf_iterations = $args{kdf_iterations};
         croak 'invalid root_org'
           unless ( exists $args{root_org} && safe_str( $args{root_org} ) );

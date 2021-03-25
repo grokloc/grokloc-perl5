@@ -51,6 +51,12 @@ sub safe_unixtime ($t) {
     return 1;
 }
 
+sub safe_kdf_iterations ($i) {
+    return unless ( defined $i );
+    return if ( $i !~ /^\d+$/msx );
+    return ( 0 < $i < 232 );
+}
+
 our @EXPORT_OK = qw(
   $STR_MAX
   $UNIXTIME_MAX
@@ -58,6 +64,7 @@ our @EXPORT_OK = qw(
   safe_str
   safe_strs
   safe_unixtime
+  safe_kdf_iterations
 );
 
 our %EXPORT_TAGS = (
@@ -69,6 +76,7 @@ our %EXPORT_TAGS = (
           safe_str
           safe_strs
           safe_unixtime
+          safe_kdf_iterations
           )
     ],
     validators => [
@@ -77,6 +85,7 @@ our %EXPORT_TAGS = (
           safe_str
           safe_strs
           safe_unixtime
+          safe_kdf_iterations
           )
     ]
 );

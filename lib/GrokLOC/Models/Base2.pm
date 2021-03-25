@@ -26,10 +26,18 @@ class GrokLOC::Models::Base2 {
             $id = $args{id};
         }
         if ( exists $args{meta} ) {
-            croak 'meta invalid'
-              unless safe_objs( [ ref $args{meta} ],
-                ['GrokLOC::Models::Meta2'] );
-            $meta = $args{meta};
+
+            # If passed through a json encode/decode cycle, the meta object
+            # will be a hash ref, so convert it.
+            if ( ref( $args{meta} ) eq 'HASH' ) {
+                $meta = GrokLOC::Models::Meta2->new( %{ $args{meta} } );
+            }
+            else {
+                croak 'meta invalid'
+                  unless safe_objs( [ ref $args{meta} ],
+                    ['GrokLOC::Models::Meta2'] );
+                $meta = $args{meta};
+            }
         }
     }
 
