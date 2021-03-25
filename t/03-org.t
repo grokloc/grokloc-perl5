@@ -7,7 +7,6 @@ use Test2::Tools::Exception;
 use GrokLOC::Env qw(:all);
 use GrokLOC::Models qw(:all);
 use GrokLOC::Models::Org;
-use GrokLOC::Models::User;
 use GrokLOC::State::Init qw(state_init);
 
 my $st;
@@ -21,34 +20,41 @@ ok(
 my $org;
 
 ok(
-    lives {
-        $org = GrokLOC::Models::Org->new( name => random_v4uuid );
-    },
-    'new'
+    dies {
+        GrokLOC::Models::Org->new;
+    }
 ) or note($@);
 
-is( $org->_meta->status, $STATUS_UNCONFIRMED, 'status' );
-is( $org->_meta->ctime,  0,                   'ctime' );
-is( $org->_meta->mtime,  0,                   'mtime' );
+my $name = random_v4uuid;
 
 ok(
-    dies {
-        $org = GrokLOC::Models::Org->new();
-    },
-    'no args'
+    lives {
+        $org = GrokLOC::Models::Org->new( name => $name );
+    }
 ) or note($@);
+
+is( $org->name,  $name,     'name' );
+is( $org->owner, $NO_OWNER, 'owner' );
+isnt( $org->id, q{}, 'id' );
+is( ref( $org->meta ), 'GrokLOC::Models::Meta', 'meta' );
+
+my $id    = random_v4uuid;
+my $owner = random_v4uuid;
 
 ok(
     lives {
         $org = GrokLOC::Models::Org->new(
-            id    => random_v4uuid,
-            name  => random_v4uuid,
-            owner => random_v4uuid,
-            _meta => GrokLOC::Models::Meta->new(),
+            name  => $name,
+            owner => $owner,
+            id    => $id
         );
-    },
-    'all args'
+    }
 ) or note($@);
+
+is( $org->name,        $name,                   'name' );
+is( $org->owner,       $owner,                  'owner' );
+is( $org->id,          $id,                     'id' );
+is( ref( $org->meta ), 'GrokLOC::Models::Meta', 'meta' );
 
 my $rt;
 
@@ -87,7 +93,7 @@ my $read_org;
 ok(
     lives {
         $read_org =
-          GrokLOC::Models::Org->read( $st->random_replica(), $org->id );
+          GrokLOC::Models::Org::read( $st->random_replica(), $org->id );
     },
     'read'
 ) or note($@);
@@ -99,7 +105,7 @@ my $not_found;
 ok(
     lives {
         $not_found =
-          GrokLOC::Models::Org->read( $st->random_replica(), random_v4uuid );
+          GrokLOC::Models::Org::read( $st->random_replica(), random_v4uuid );
     },
     'read not found'
 ) or note($@);
@@ -226,14 +232,14 @@ is( $result, $RESPONSE_OK, 'update status ok' );
 ok(
     lives {
         $read_org =
-          GrokLOC::Models::Org->read( $st->random_replica(), $org->id );
+          GrokLOC::Models::Org::read( $st->random_replica(), $org->id );
     },
     'read'
 ) or note($@);
 
-is( $read_org->id,            $org->id,       'read ok' );
-is( $read_org->_meta->status, $STATUS_ACTIVE, 'confirm status' );
-is( $read_org->owner,         $user_id,       'confirm owner' );
+is( $read_org->id,           $org->id,       'read ok' );
+is( $read_org->meta->status, $STATUS_ACTIVE, 'confirm status' );
+is( $read_org->owner,        $user_id,       'confirm owner' );
 
 done_testing;
 

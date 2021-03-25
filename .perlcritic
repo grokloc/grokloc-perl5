@@ -2,9 +2,9 @@ severity = 1
 [ControlStructures::ProhibitPostfixControls]
 allow = for if unless
 [-CodeLayout::RequireTidyCode]
-[-ValuesAndExpressions::RequireInterpolationOfMetachars]
-[-ValuesAndExpressions::ProhibitLongChainsOfMethodCalls]
-[-Subroutines::ProhibitBuiltinHomonyms]
+[ValuesAndExpressions::RequireInterpolationOfMetachars]
+[ValuesAndExpressions::ProhibitLongChainsOfMethodCalls]
+[Subroutines::ProhibitBuiltinHomonyms]
 [-Subroutines::ProhibitSubroutinePrototypes]
 [ValuesAndExpressions::ProhibitMagicNumbers]
 allowed_values = -1000..1000
@@ -12,7 +12,7 @@ allowed_values = -1000..1000
 forbid = abstract bases close contract last left no record right second
 [Subroutines::ProhibitUnusedPrivateSubroutines]
 allow = _update_status
-[-Subroutines::ProhibitManyArgs]
+[Subroutines::ProhibitManyArgs]
 [-Documentation::RequirePodSections]
 [-TooMuchCode::ProhibitDuplicateLiteral]
 [-ControlStructures::ProhibitUnlessBlocks]

@@ -1,11 +1,9 @@
 package GrokLOC::Models::Org;
+use Object::Pad;
 use strictures 2;
 use Carp qw(croak);
-use Crypt::Misc qw(random_v4uuid);
-use Moo;
 use Readonly;
 use Syntax::Keyword::Try qw(try catch :experimental);
-use Types::Standard qw(Str);
 use experimental qw(signatures);
 use GrokLOC::Models qw(:all);
 use GrokLOC::Models::Base;
@@ -14,143 +12,129 @@ use GrokLOC::Security::Input qw(:validators);
 
 # ABSTRACT: Org model with persistence methods.
 
+## no critic (RequireEndWithOne);
+
 our $VERSION   = '0.01';
 our $AUTHORITY = 'cpan:bclawsie';
-
-with 'GrokLOC::Models::Base';
 
 Readonly::Scalar our $SCHEMA_VERSION => 0;
 Readonly::Scalar our $TABLENAME      => $ORGS_TABLENAME;
 
-has name => (
-    is       => 'ro',
-    isa      => Str->where('GrokLOC::Security::Input::safe_str $_'),
-    required => 1,
-);
+class GrokLOC::Models::Org extends GrokLOC::Models::Base {
+    has $name :reader;
+    has $owner :reader;
 
-has owner => (
-    is       => 'ro',
-    isa      => Str->where('GrokLOC::Security::Input::safe_str $_'),
-    required => 0,
-    default  => $NO_OWNER,
-);
+   # Constructor has two forms:
+   # 1. New org. In this case, there must be exactly one field in the args hash:
+   #    (name). New orgs have default $NO_OWNER.
+   # 2. Existing org. In this case, the (owner, id) must also be provided, while
+   #    the meta struct is optional.
+    BUILD(%args) {
+        croak 'missing/malformed name'
+          unless ( exists $args{name} && safe_str( $args{name} ) );
+        $name  = $args{name};
+        $owner = $NO_OWNER;
 
-# Valid constructor calls:
-# ->new(name=>...)
-# ->new([all args])
-around BUILDARGS => sub ( $orig, $class, @args ) {
-    my %kv  = @args;
-    my $len = scalar keys %kv;
+        # New org.
+        # Parent constructor will provide id, meta.
+        return if ( 1 == scalar keys %args );
 
-    # New. Owner will be set to the default.
-    if ( 1 == $len ) {
-        croak 'missing/malformed key name in new org constructor'
-          unless ( exists $kv{name} && safe_str( $kv{name} ) );
+        # Otherwise, this is an existing org.
+        croak 'missing/malformed owner'
+          unless ( exists $args{owner} && safe_str( $args{owner} ) );
+        $owner = $args{owner};
+
+        # Make sure caller at least passed id; meta can be optional.
+        croak 'missing base args' unless ( exists $args{id} );
+
+        # Parent constructor validates id and optionally meta.
+        return;
+    }
+
+    # insert can be called after ->new. Call like:
+    # try {
+    #     $result = $org->insert( $master );
+    #     die 'insert failed' unless $result == $RESPONSE_OK;
+    # }
+    # catch ($e) {
+    #     ...unknown error
+    # }
+    method insert ( $master ) {
+        croak 'db ref'
+          unless safe_objs( [$master], [ 'Mojo::SQLite', 'Mojo::Pg' ] );
+        try {
+            $master->db->insert(
+                $TABLENAME,
+                {
+                    id      => $self->id,
+                    name    => $self->name,
+                    owner   => $self->owner,
+                    status  => $self->meta->status,
+                    version => $SCHEMA_VERSION,
+                }
+            );
+        }
+        catch ($e) {
+            return $RESPONSE_CONFLICT if ( $e =~ /unique/imsx );
+            croak 'uncaught: ' . $e;
+        };
+        return $RESPONSE_OK;
+    }
+
+    method update_owner ( $master, $owner ) {
+        croak 'db ref'
+          unless safe_objs( [$master], [ 'Mojo::SQLite', 'Mojo::Pg' ] );
+        croak 'malformed owner' unless safe_str($owner);
+        my $v =
+          $master->db->select( $USERS_TABLENAME, [qw{*}], { id => $owner } )
+          ->hash;
+        return $RESPONSE_USER_ERR
+          unless ( defined $v )
+          && ( $v->{status} == $STATUS_ACTIVE )
+          && ( $v->{org} eq $self->id );
+        return $self->_update( $master, $TABLENAME, $self->id,
+            { owner => $owner } );
+    }
+
+    method update_status ( $master, $status ) {
+        return $self->_update_status( $master, $TABLENAME, $self->id, $status );
+    }
+
+    method TO_JSON {
         return {
-            id    => random_v4uuid,
-            name  => $kv{name},
-            _meta => GrokLOC::Models::Meta->new(),
+            name  => $self->name,
+            owner => $self->owner,
+            id    => $self->id,
+            meta  => $self->meta,
         };
     }
-
-    # Otherwise, populate with all args.
-    for my $k (qw(id name owner _meta)) {
-        croak "missing key $k all-arg constructor" if ( !exists $kv{$k} );
-    }
-
-    # If passed through a json encode/decode cycle, the meta object
-    # will be a hash ref, so convert it.
-    if ( ref( $kv{_meta} ) eq 'HASH' ) {
-        $kv{_meta} = GrokLOC::Models::Meta->new( %{ $kv{_meta} } );
-    }
-
-    return \%kv;
-};
-
-sub TO_JSON ($self) {
-    return {
-        id    => $self->id,
-        name  => $self->name,
-        owner => $self->owner,
-        _meta => $self->_meta->TO_JSON(),
-    };
-}
-
-# insert can be called after ->new. Call like:
-# try {
-#     $result = $org->insert( $master );
-#     die 'insert failed' unless $result == $RESPONSE_OK;
-# }
-# catch ($e) {
-#     ...unknown error
-# }
-sub insert ( $self, $master ) {
-    croak 'db ref'
-      unless safe_objs( [$master], [ 'Mojo::SQLite', 'Mojo::Pg' ] );
-    try {
-        $master->db->insert(
-            $TABLENAME,
-            {
-                id      => $self->id,
-                name    => $self->name,
-                owner   => $self->owner,
-                status  => $self->_meta->status,
-                version => $SCHEMA_VERSION,
-            }
-        );
-    }
-    catch ($e) {
-        return $RESPONSE_CONFLICT if ( $e =~ /unique/imsx );
-        croak 'uncaught: ' . $e;
-    };
-    return $RESPONSE_OK;
 }
 
 # read is a static method for creating a new Org from an existing row.
 # Call like: ;
 # try {
-#     $org = GrokLOC::Models::Org->read( $dbo, $id );
+#     $org = GrokLOC::Models::Org::read( $dbo, $id );
 #     ...$org is undef if the row isn't found.
 # }
 # catch ($e) {
 #     ...otherwise unknown error
 # }
-sub read ( $pkg, $dbo, $id ) {
-    croak 'call like: ' . __PACKAGE__ . '->read( $dbo, $id )'
-      unless $pkg eq __PACKAGE__;
+sub read ( $dbo, $id ) {
     croak 'db ref'
       unless safe_objs( [$dbo], [ 'Mojo::SQLite', 'Mojo::Pg' ] );
     croak 'malformed id' unless safe_str($id);
     my $v = $dbo->db->select( $TABLENAME, [qw{*}], { id => $id } )->hash;
-    return unless ( defined $v );    # Not found.w
-    return $pkg->new(
+    return unless ( defined $v );    # Not found.
+    return __PACKAGE__->new(
         id    => $v->{id},
         name  => $v->{name},
         owner => $v->{owner},
-        _meta => GrokLOC::Models::Meta->new(
+        meta  => GrokLOC::Models::Meta->new(
             ctime  => $v->{ctime},
             mtime  => $v->{mtime},
-            status => $v->{status}
+            status => $v->{status},
         )
     );
-}
-
-sub update_owner ( $self, $master, $owner ) {
-    croak 'db ref'
-      unless safe_objs( [$master], [ 'Mojo::SQLite', 'Mojo::Pg' ] );
-    croak 'malformed owner' unless safe_str($owner);
-    my $v =
-      $master->db->select( $USERS_TABLENAME, [qw{*}], { id => $owner } )->hash;
-    return $RESPONSE_USER_ERR
-      unless ( defined $v )
-      && ( $v->{status} == $STATUS_ACTIVE )
-      && ( $v->{org} eq $self->id );
-    return $self->_update( $master, $TABLENAME, $self->id,
-        { owner => $owner } );
-}
-
-sub update_status ( $self, $master, $status ) {
-    return $self->_update_status( $master, $TABLENAME, $self->id, $status );
 }
 
 1;

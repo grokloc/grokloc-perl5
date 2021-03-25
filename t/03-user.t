@@ -31,8 +31,7 @@ croak 'update org status' unless ( $result == $RESPONSE_OK );
 
 my $user;
 
-my ( $display, $email, $password ) =
-  ( random_v4uuid, random_v4uuid, random_v4uuid );
+my ( $display, $email, $password ) = ( 'display', 'email', 'password' );
 
 ok(
     lives {
@@ -48,13 +47,14 @@ ok(
     'new'
 ) or note($@);
 
-is( $user->_meta->status, $STATUS_UNCONFIRMED, 'status' );
-is( $user->_meta->ctime,  0,                   'ctime' );
-is( $user->_meta->mtime,  0,                   'mtime' );
+is( $user->meta->status, $STATUS_UNCONFIRMED, 'status' );
+is( $user->meta->ctime,  0,                   'ctime' );
+is( $user->meta->mtime,  0,                   'mtime' );
 
 isnt( $user->display,  $display,  'display' );
 isnt( $user->email,    $email,    'email' );
 isnt( $user->password, $password, 'password' );
+isnt( $user->id,       q{},       'id' );
 
 ok(
     dies {
@@ -75,7 +75,7 @@ ok(
             email_digest      => $user->email_digest,
             org               => $user->org,
             password          => $user->password,
-            _meta             => $user->_meta,
+            meta              => $user->meta,
         );
     },
     'all args'
@@ -134,7 +134,7 @@ my $read_user;
 ok(
     lives {
         $read_user =
-          GrokLOC::Models::User->read( $st->random_replica(), $user->id );
+          GrokLOC::Models::User::read( $st->random_replica(), $user->id );
     },
     'read'
 ) or note($@);
@@ -146,7 +146,7 @@ my $not_found;
 ok(
     lives {
         $not_found =
-          GrokLOC::Models::User->read( $st->random_replica(), random_v4uuid );
+          GrokLOC::Models::User::read( $st->random_replica(), random_v4uuid );
     },
     'read not found'
 ) or note($@);
@@ -167,7 +167,7 @@ is( $result, $RESPONSE_OK, 'update display ok' );
 ok(
     lives {
         $read_user =
-          GrokLOC::Models::User->read( $st->random_replica(), $user->id );
+          GrokLOC::Models::User::read( $st->random_replica(), $user->id );
     },
     'read'
 ) or note($@);
@@ -194,7 +194,7 @@ is( $result, $RESPONSE_OK, 'update password ok' );
 ok(
     lives {
         $read_user =
-          GrokLOC::Models::User->read( $st->random_replica(), $user->id );
+          GrokLOC::Models::User::read( $st->random_replica(), $user->id );
     },
     'read'
 ) or note($@);
@@ -216,13 +216,13 @@ is( $result, $RESPONSE_OK, 'update status ok' );
 ok(
     lives {
         $read_user =
-          GrokLOC::Models::User->read( $st->random_replica(), $user->id );
+          GrokLOC::Models::User::read( $st->random_replica(), $user->id );
     },
     'read'
 ) or note($@);
 
-is( $read_user->id,            $user->id,      'read ok' );
-is( $read_user->_meta->status, $STATUS_ACTIVE, 'confirm status' );
+is( $read_user->id,           $user->id,      'read ok' );
+is( $read_user->meta->status, $STATUS_ACTIVE, 'confirm status' );
 
 done_testing;
 

@@ -32,21 +32,21 @@ sub with_session ( $c ) {
     my $user;
     try {
         $user =
-          GrokLOC::Models::User->read( $c->st->random_replica(), $user_id );
+          GrokLOC::Models::User::read( $c->st->random_replica(), $user_id );
     }
     catch ($e) {
         $c->app->log->error( 'internal error reading user ' . $user_id );
         $c->render( app_msg( 500, { error => 'internal error' } ) );
         return;
     }
-    if ( !defined($user) || $user->_meta->status != $STATUS_ACTIVE ) {
+    if ( !defined($user) || $user->meta->status != $STATUS_ACTIVE ) {
         $c->render( app_msg( 404, { error => 'user not found' } ) );
         return;
     }
     my $org;
     try {
         $org =
-          GrokLOC::Models::Org->read( $c->st->random_replica(), $user->org );
+          GrokLOC::Models::Org::read( $c->st->random_replica(), $user->org );
     }
     catch ($e) {
         $c->app->log->error(
@@ -54,7 +54,7 @@ sub with_session ( $c ) {
         $c->render( app_msg( 500, { error => 'internal error' } ) );
         return;
     }
-    if ( !defined($org) || $org->_meta->status != $STATUS_ACTIVE ) {
+    if ( !defined($org) || $org->meta->status != $STATUS_ACTIVE ) {
         $c->render( app_msg( 400, { error => 'org not found' } ) );
         return;
     }
