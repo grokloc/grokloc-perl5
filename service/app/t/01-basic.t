@@ -7,6 +7,7 @@ use Test::Mojo;
 use Test2::V0;
 use Test2::Tools::Exception;
 use GrokLOC::App qw(:all);
+use GrokLOC::App::Client;
 use GrokLOC::App::JWT qw(:all);
 use GrokLOC::App::Routes qw(:routes);
 use GrokLOC::Env qw(:all);
@@ -55,5 +56,26 @@ $t->post_ok(
         $X_GROKLOC_TOKEN_REQUEST => $token_request,
     }
 )->status_is(204);
+
+# Further tests require state - use the client.
+
+my $client;
+
+ok(
+    lives {
+        $client = GrokLOC::App::Client->new(
+            id         => $root_user,
+            api_secret => $root_user_api_secret,
+            url        => $url,
+            ua         => $t->ua,
+        );
+    }
+) or note($@);
+
+ok(
+    lives {
+        $client->token_request;
+    }
+) or note($@);
 
 done_testing();

@@ -115,7 +115,7 @@ sub new_token ( $c ) {
         $c->render( app_msg( 500, { error => 'internal error' } ) );
         return;
     }
-    $c->res->headers->header( $X_GROKLOC_TOKEN => $JWT_TYPE . q{ } . $token );
+    $c->res->headers->header( $JWT_HEADER => $JWT_TYPE . q{ } . $token );
     $c->render( status => 204, data => q{} );
     $c->app->log->info( 'new token for user ' . $user->id );
     return 1;
