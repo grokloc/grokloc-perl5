@@ -1,7 +1,6 @@
 package GrokLOC::App::Client;
 use Object::Pad;
 use strictures 2;
-use Carp qw(croak);
 use experimental qw(signatures);
 
 # ABSTRACT: App client library.
@@ -10,6 +9,10 @@ use experimental qw(signatures);
 
 our $VERSION   = '0.01';
 our $AUTHORITY = 'cpan:bclawsie';
+
+class Client {
+
+}
 
 1;
 
