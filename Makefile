@@ -77,9 +77,9 @@ ci-test:
 # Perltidy.
 .PHONY: ci-tidy
 ci-tidy:
-	find -name \*.pm -print0 | xargs -0 perl -pi -e 's/\:reader\;/; #:reader/msx'
+	find -name \*.pm -print0 | xargs -0 perl -pi -e 's/\:(reader|writer|mutator)\;/; #:$$1/msx'
 	find -name \*.pm -print0 | xargs -0 $(TIDY) -b 2>/dev/null
-	find -name \*.pm -print0 | xargs -0 perl -pi -e 's/\;\s+\#\:reader/\:reader\;/msx'
+	find -name \*.pm -print0 | xargs -0 perl -pi -e 's/\;\s+\#\:(reader|writer|mutator)/\:$$1\;/msx'
 	find -name \*.t -print0 | xargs -0 $(TIDY) -b 2>/dev/null
 	find -name \*bak -delete
 
