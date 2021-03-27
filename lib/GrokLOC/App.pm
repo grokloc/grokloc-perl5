@@ -12,7 +12,6 @@ use base qw(Exporter);
 
 # Headers.
 Readonly::Scalar our $X_GROKLOC_ID            => 'X-GrokLOC-ID';
-Readonly::Scalar our $X_GROKLOC_TOKEN         => 'X-GrokLOC-Token';
 Readonly::Scalar our $X_GROKLOC_TOKEN_REQUEST => 'X-GrokLOC-Token-Request';
 
 # Auth levels set in the request stash. If you need the request to have a
@@ -31,15 +30,15 @@ Readonly::Scalar our $STASH_USER => 'user';
 Readonly::Scalar our $STASH_ORG  => 'org';
 
 our @EXPORT_OK =
-  qw($X_GROKLOC_ID $X_GROKLOC_TOKEN $X_GROKLOC_TOKEN_REQUEST $AUTH_NONE $AUTH_USER $AUTH_ORG $AUTH_ROOT $TOKEN_USER $TOKEN_ORG $TOKEN_ROOT $STASH_AUTH $STASH_USER $STASH_ORG);
+  qw($X_GROKLOC_ID $X_GROKLOC_TOKEN_REQUEST $AUTH_NONE $AUTH_USER $AUTH_ORG $AUTH_ROOT $TOKEN_USER $TOKEN_ORG $TOKEN_ROOT $STASH_AUTH $STASH_USER $STASH_ORG);
 our %EXPORT_TAGS = (
-    headers => [qw($X_GROKLOC_ID $X_GROKLOC_TOKEN $X_GROKLOC_TOKEN_REQUEST)],
+    headers     => [qw($X_GROKLOC_ID $X_GROKLOC_TOKEN_REQUEST)],
     auth_levels => [
         qw($AUTH_NONE $AUTH_USER $AUTH_ORG $AUTH_ROOT $TOKEN_USER $TOKEN_ORG $TOKEN_ROOT)
     ],
     stash_keys => [qw($STASH_AUTH $STASH_USER $STASH_ORG)],
     all        => [
-        qw($X_GROKLOC_ID $X_GROKLOC_TOKEN $X_GROKLOC_TOKEN_REQUEST $AUTH_NONE $AUTH_USER $AUTH_ORG $AUTH_ROOT $TOKEN_USER $TOKEN_ORG $TOKEN_ROOT $STASH_AUTH $STASH_USER $STASH_ORG)
+        qw($X_GROKLOC_ID $X_GROKLOC_TOKEN_REQUEST $AUTH_NONE $AUTH_USER $AUTH_ORG $AUTH_ROOT $TOKEN_USER $TOKEN_ORG $TOKEN_ROOT $STASH_AUTH $STASH_USER $STASH_ORG)
     ],
 );
 

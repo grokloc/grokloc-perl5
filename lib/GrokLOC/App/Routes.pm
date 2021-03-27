@@ -15,13 +15,16 @@ Readonly::Scalar our $API_VERSION         => '/v0';
 Readonly::Scalar our $API_ROUTE           => $API . $API_VERSION;
 Readonly::Scalar our $OK                  => '/ok';
 Readonly::Scalar our $OK_ROUTE            => $API_ROUTE . $OK;
+Readonly::Scalar our $STATUS              => '/status';
+Readonly::Scalar our $STATUS_ROUTE        => $API_ROUTE . $STATUS;
 Readonly::Scalar our $TOKEN_REQUEST       => '/token';
 Readonly::Scalar our $TOKEN_REQUEST_ROUTE => $API_ROUTE . $TOKEN_REQUEST;
 
-Readonly::Array our @ROUTES => ( $API_ROUTE, $OK_ROUTE, $TOKEN_REQUEST_ROUTE );
+Readonly::Array our @ROUTES =>
+  ( $API_ROUTE, $OK_ROUTE, $STATUS_ROUTE, $TOKEN_REQUEST_ROUTE );
 
 our @EXPORT_OK =
-  qw($API $API_VERSION $API_ROUTE $OK $OK_ROUTE $TOKEN_REQUEST $TOKEN_REQUEST_ROUTE @ROUTES);
+  qw($API $API_VERSION $API_ROUTE $OK $OK_ROUTE $STATUS $STATUS_ROUTE $TOKEN_REQUEST $TOKEN_REQUEST_ROUTE @ROUTES);
 our %EXPORT_TAGS = (
     all => [
         qw(
@@ -30,6 +33,8 @@ our %EXPORT_TAGS = (
           $API_ROUTE
           $OK
           $OK_ROUTE
+          $STATUS
+          $STATUS_ROUTE
           $TOKEN_REQUEST
           $TOKEN_REQUEST_ROUTE
           @ROUTES
@@ -39,6 +44,7 @@ our %EXPORT_TAGS = (
         qw(
           $API_ROUTE
           $OK_ROUTE
+          $STATUS_ROUTE
           $TOKEN_REQUEST_ROUTE
           @ROUTES
           )

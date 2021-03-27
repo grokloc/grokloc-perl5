@@ -78,4 +78,16 @@ ok(
     }
 ) or note($@);
 
+ok(
+    lives {
+        $client->ok;
+    }
+) or note($@);
+
+ok(
+    lives {
+        $client->status;
+    }
+) or note($@);
+
 done_testing();

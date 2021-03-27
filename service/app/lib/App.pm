@@ -17,6 +17,8 @@ sub startup ($self) {
     my $level = $ENV{$GROKLOC_ENV} // croak 'level env';
     my $st    = state_init($level);
     $self->helper( st => sub( $self ) { return $st; } );
+    my $started_at = time;
+    $self->helper( started_at => sub( $self ) { return $started_at; } );
     $self->routes_init;
     $self->log->info('app startup');
     return;
@@ -29,10 +31,14 @@ sub routes_init ($self) {
     $r->get($OK_ROUTE)->to('api-v0-ok#ok');
 
     # Everything under /api/v0 requires a user/org/auth session in the stash.
+    # Child routes of $with_session should not include the /api/v0 part.
     my $with_session = $r->under($API_ROUTE)->to('api-v0-auth#with_session');
 
     # Request a new token.
     $with_session->post($TOKEN_REQUEST)->to('api-v0-auth#new_token');
+
+    # Root-authenticated status.
+    $with_session->get($STATUS)->to('api-v0-status#status');
 
     $r->any(
         '/*whatever' => { whatever => q{} } => sub ($c) {

@@ -2,7 +2,7 @@ package App::Controller::Api::V0::Auth;
 use strictures 2;
 use Mojo::Base 'Mojolicious::Controller';
 use Syntax::Keyword::Try qw(try catch :experimental);
-use experimental qw(signatures);
+use experimental qw(signatures switch);
 use GrokLOC::App qw(:all);
 use GrokLOC::App::JWT qw(:all);
 use GrokLOC::App::Message qw(app_msg);
@@ -58,8 +58,8 @@ sub with_session ( $c ) {
         $c->render( app_msg( 400, { error => 'org not found' } ) );
         return;
     }
-    my $auth_level = $AUTH_USER;
 
+    my $auth_level = $AUTH_USER;
     if ( $org->id eq $c->st->root_org ) {
         $auth_level = $AUTH_ROOT;
     }
@@ -67,9 +67,25 @@ sub with_session ( $c ) {
         $auth_level = $AUTH_ORG;
     }
 
-    if ( $c->req->headers->header($X_GROKLOC_TOKEN) ) {
-
-        # Need to fill in jwt libs.
+    if ( $c->req->headers->header($AUTHORIZATION) ) {
+        try {
+            my $encoded = $c->req->headers->header($AUTHORIZATION);
+            my $decoded = decode_token( $encoded, key( $c->st->key ) );
+        }
+        catch ($e) {
+            $c->render( app_msg( 400, { error => 'refresh token' } ) );
+            return;
+        }
+        given ($auth_level) {
+            when ($AUTH_USER) { $auth_level = $TOKEN_USER; }
+            when ($AUTH_ORG)  { $auth_level = $TOKEN_ORG; }
+            when ($AUTH_ROOT) { $auth_level = $TOKEN_ROOT; }
+            default {
+                $c->app->log->error('invalid auth level');
+                $c->render( app_msg( 500, { error => 'internal error' } ) );
+                return;
+            }
+        }
     }
     $c->stash( $STASH_AUTH => $auth_level );
     $c->stash( $STASH_ORG  => $org );
@@ -115,7 +131,7 @@ sub new_token ( $c ) {
         $c->render( app_msg( 500, { error => 'internal error' } ) );
         return;
     }
-    $c->res->headers->header( $JWT_HEADER => $JWT_TYPE . q{ } . $token );
+    $c->res->headers->header( $AUTHORIZATION => $JWT_TYPE . q{ } . $token );
     $c->render( status => 204, data => q{} );
     $c->app->log->info( 'new token for user ' . $user->id );
     return 1;

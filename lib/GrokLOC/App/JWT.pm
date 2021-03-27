@@ -13,7 +13,7 @@ our $AUTHORITY = 'cpan:bclawsie';
 
 use base qw(Exporter);
 
-Readonly::Scalar our $JWT_HEADER     => 'Authorization';
+Readonly::Scalar our $AUTHORIZATION  => 'Authorization';
 Readonly::Scalar our $JWT_TYPE       => 'Bearer';
 Readonly::Scalar our $JWT_EXPIRATION => 86_400;
 
@@ -58,10 +58,10 @@ sub decode_token ( $token, $key ) {
 }
 
 our @EXPORT_OK =
-  qw(encode_token_request verify_token_request encode_token decode_token $JWT_HEADER $JWT_TYPE $JWT_EXPIRATION);
+  qw(encode_token_request verify_token_request encode_token decode_token $AUTHORIZATION $JWT_TYPE $JWT_EXPIRATION);
 our %EXPORT_TAGS = (
     all => [
-        qw(encode_token_request verify_token_request encode_token decode_token $JWT_HEADER $JWT_TYPE $JWT_EXPIRATION)
+        qw(encode_token_request verify_token_request encode_token decode_token $AUTHORIZATION $JWT_TYPE $JWT_EXPIRATION)
     ],
 );
 

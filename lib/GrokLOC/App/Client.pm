@@ -48,8 +48,8 @@ class GrokLOC::App::Client {
             && $_token_time > $now )
         {
             return {
-                $X_GROKLOC_ID    => $id,
-                $X_GROKLOC_TOKEN => $_token
+                $X_GROKLOC_ID  => $id,
+                $AUTHORIZATION => $_token
             };
         }
 
@@ -72,9 +72,30 @@ class GrokLOC::App::Client {
         # Subtract a one minute to be safe.
         $_token_time = $now + $JWT_EXPIRATION - 60;
         return {
-            $X_GROKLOC_ID    => $id,
-            $X_GROKLOC_TOKEN => $_token
+            $X_GROKLOC_ID  => $id,
+            $AUTHORIZATION => $_token
         };
+    }
+
+    # ok is an unauthenticated ping.
+    method ok {
+        my $route  = $url . $OK_ROUTE;
+        my $result = $ua->get($route)->result;
+        if ( 200 != $result->code ) {
+            croak 'status code ' . $result->code;
+        }
+        return $result->json;
+    }
+
+    # status wrapped from app_msg and returned as a hashref. Requires root auth.
+    method status {
+        my $headers = $self->token_request;
+        my $route   = $url . $STATUS_ROUTE;
+        my $result  = $ua->get( $route => $headers )->result;
+        if ( 200 != $result->code ) {
+            croak 'status code ' . $result->code;
+        }
+        return $result->json;
     }
 }
 
