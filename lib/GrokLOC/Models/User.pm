@@ -140,7 +140,7 @@ class GrokLOC::Models::User extends GrokLOC::Models::Base {
         }
         catch ($e) {
             return $RESPONSE_CONFLICT if ( $e =~ /unique/imsx );
-            croak 'uncaught: ' . $e;
+            croak 'uncaught:' . $e;
         };
         return $RESPONSE_OK;
     }

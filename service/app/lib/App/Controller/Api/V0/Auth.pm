@@ -35,7 +35,7 @@ sub with_session ( $c ) {
           GrokLOC::Models::User::read( $c->st->random_replica(), $user_id );
     }
     catch ($e) {
-        $c->app->log->error( 'internal error reading user ' . $user_id );
+        $c->app->log->error("internal error reading user $user_id:$e");
         $c->render( app_msg( 500, { error => 'internal error' } ) );
         return;
     }
@@ -49,8 +49,7 @@ sub with_session ( $c ) {
           GrokLOC::Models::Org::read( $c->st->random_replica(), $user->org );
     }
     catch ($e) {
-        $c->app->log->error(
-            'internal error reading org:' . $user->org . ': ' . $e );
+        $c->app->log->error("internal error reading org:$user->org:$e");
         $c->render( app_msg( 500, { error => 'internal error' } ) );
         return;
     }
@@ -112,8 +111,7 @@ sub new_token ( $c ) {
           decrypt( $user->api_secret, key( $c->st->key ), iv( $user->id ) );
     }
     catch ($e) {
-        $c->app->log->error(
-            'cannot decrypt api_secret for user:' . $user->id . ': ' . $e );
+        $c->app->log->error("cannot decrypt api_secret for user:$user->id:$e");
         $c->render( app_msg( 500, { error => 'internal error' } ) );
         return;
     }
@@ -126,8 +124,7 @@ sub new_token ( $c ) {
         $token = encode_token( $user->id, key( $c->st->key ) );
     }
     catch ($e) {
-        $c->app->log->error(
-            'cannot encode token for user:' . $user->id . ': ' . $e );
+        $c->app->log->error("cannot encode token for user:$user->id:$e");
         $c->render( app_msg( 500, { error => 'internal error' } ) );
         return;
     }
