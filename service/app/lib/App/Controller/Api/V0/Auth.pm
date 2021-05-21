@@ -1,8 +1,7 @@
 package App::Controller::Api::V0::Auth;
 use strictures 2;
 use Mojo::Base 'Mojolicious::Controller';
-use Syntax::Keyword::Try qw(try catch :experimental);
-use experimental qw(signatures switch);
+use experimental qw(signatures switch try);
 use GrokLOC::App qw(:all);
 use GrokLOC::App::JWT qw(:all);
 use GrokLOC::App::Message qw(app_msg);

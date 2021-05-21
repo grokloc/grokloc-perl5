@@ -1,13 +1,13 @@
-IMG_CI       = grokloc/grokloc-perl5:ci
+IMG_CI       = grokloc/grokloc-perl5:dev
 IMG_DEV      = grokloc/grokloc-perl5:dev
 DOCKER       = docker
 DOCKER_RUN   = $(DOCKER) run --rm -it
+CWD          = $(shell pwd)
 PERL5        = perl
 DEV_RUNNER   = morbo
 TEST_RUNNER  = yath
 UNIT_ENVS    = --env-file ./env/unit.env
 PORTS        = -p 3000:3000
-CWD          = $(shell pwd)
 BASE         = /grokloc
 TIDY         = perltidier
 CRITIC_ARGS  =

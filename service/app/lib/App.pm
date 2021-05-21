@@ -16,9 +16,9 @@ our $AUTHORITY = 'cpan:bclawsie';
 sub startup ($self) {
     my $level = $ENV{$GROKLOC_ENV} // croak 'level env';
     my $st    = state_init($level);
-    $self->helper( st => sub( $self ) { return $st; } );
+    $self->helper( st => sub ($self) { return $st; } );
     my $started_at = time;
-    $self->helper( started_at => sub( $self ) { return $started_at; } );
+    $self->helper( started_at => sub ($self) { return $started_at; } );
     $self->routes_init;
     $self->log->info('app startup');
     return;

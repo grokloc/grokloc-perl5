@@ -1,42 +1,61 @@
 FROM debian:bullseye-slim
-RUN apt-get update && apt-get -y upgrade
-RUN apt-get update --fix-missing
-RUN apt-get -y install \
-    cpanminus \
-    libtest2-suite-perl \
-    libterm-readline-gnu-perl \
-    liblist-allutils-perl \
-    libsyntax-keyword-try-perl \
-    libperl-critic-perl \
-    libdata-uuid-perl \
-    libmultidimensional-perl \
-    libindirect-perl \
-    libbareword-filehandles-perl \
-    libcpanel-json-xs-perl \
-    libev-perl \
-    libio-socket-socks-perl \
-    libio-socket-ssl-perl \
-    libdbi-perl \
-    libdbd-sqlite3 \
-    libdbd-sqlite3-perl \
-    libcryptx-perl \
-    libcrypt-jwt-perl \
-    libmojo-sqlite-perl \
-    libgit-raw-perl \
-    libarchive-tar-wrapper-perl \
-    libsoftware-license-perl \
-    libdist-zilla-perl \
+RUN apt update
+RUN apt install -y perlbrew
+RUN perlbrew init
+RUN perlbrew install perl-5.34.0
+RUN perlbrew switch perl-5.34.0
+ENV PATH="/root/perl5/perlbrew/perls/perl-5.34.0/bin:${PATH}"
+
+ENV PERL_MM_USE_DEFAULT=1
+RUN cpan install App::cpanminus
+RUN apt install -y \
     ca-certificates \
-    build-essential
-RUN cpanm -n Test2::Harness Perl::Critic::TooMuchCode Dist::Zilla::Plugin::RewriteVersion Dist::Zilla::PluginBundle::Basic Mojolicious Crypt::Argon2 Object::Pad && rm -rf /root/.cpanm/work
+    libssl1.1 \
+    libssl-dev \
+    zlib1g-dev \
+    libreadline-dev \
+    libreadline8 \
+    readline-common \
+    sqlite3 \
+    libsqlite3-0 \
+    libsqlite3-dev
+
+RUN cpanm -n \
+    Term::ReadLine::Gnu \
+    Mojolicious \
+    Test2::Suite \
+    Test2::Harness \
+    Object::Pad \
+    Perl::Tidy \
+    Perl::Critic \
+    Perl::Critic::TooMuchCode \
+    Perl::Tidy::Sweetened \
+    List::AllUtils \
+    multidimensional \
+    indirect \
+    bareword::filehandles \
+    DBI \
+    Devel::REPL \
+    Crypt::Argon2 \
+    DBD::SQLite \
+    Mojo::SQLite \
+    Cpanel::JSON::XS \
+    CryptX \
+    Crypt::JWT \
+    EV \
+    IO::Socket::Socks \
+    IO::Socket::SSL \
+    strictures \
+    && rm -rf /root/.cpanm/work
+
 RUN rm -f /root/.cpan/build.log && rm -f /root/.cpan/latest-build
 RUN apt-get -y purge build-essential
 RUN apt-get -y autoremove
 RUN apt-get clean
+
+RUN mkdir /root/.re.pl
+RUN echo "use v5.34;\nuse strictures 2;\nuse Data::Dumper;\nuse experimental qw(signatures switch);\nuse feature 'try';\n" > /root/.re.pl/repl.rc
 RUN chown -R root:root /root
-RUN groupadd -r grokloc && useradd -r -g grokloc grokloc
-RUN mkdir /home/grokloc
-RUN chown -R grokloc.grokloc /home/grokloc
-WORKDIR /grokloc
-EXPOSE 3000
+WORKDIR /perl
+
 CMD ["tail", "-f", "/dev/null"]

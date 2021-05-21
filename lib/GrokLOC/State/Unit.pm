@@ -30,8 +30,8 @@ sub init () {
     my $key            = random_v4uuid;
 
     # Set up the initial test root org and user. Tests need these.
-    my $root_org  = $ENV{ROOT_ORG}  // croak 'unit env root org';
-    my $root_user = $ENV{ROOT_USER} // croak 'unit env root user';
+    my $root_org             = $ENV{ROOT_ORG}  // croak 'unit env root org';
+    my $root_user            = $ENV{ROOT_USER} // croak 'unit env root user';
     my $root_user_api_secret = $ENV{ROOT_USER_API_SECRET}
       // croak 'unit env root user api secret';
 
@@ -53,7 +53,7 @@ sub init () {
     $master->db->insert(
         $USERS_TABLENAME,
         {
-            id => $root_user,
+            id         => $root_user,
             api_secret =>
               encrypt( $root_user_api_secret, key($key), iv($root_user) ),
             api_secret_digest => sha256_b64($root_user_api_secret),

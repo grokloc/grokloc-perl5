@@ -1,8 +1,7 @@
 package App::Controller::Api::V0::Org;
 use strictures 2;
 use Mojo::Base 'Mojolicious::Controller';
-use Syntax::Keyword::Try qw(try catch :experimental);
-use experimental qw(signatures);
+use experimental qw(signatures try);
 use GrokLOC::App qw(:all);
 use GrokLOC::App::Routes qw(:routes);
 use GrokLOC::Models qw(:all);

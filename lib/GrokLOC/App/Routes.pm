@@ -42,7 +42,7 @@ our %EXPORT_TAGS = (
           $TOKEN_REQUEST
           $TOKEN_REQUEST_ROUTE
           @ROUTES
-          )
+        )
     ],
     routes => [
         qw(
@@ -52,7 +52,7 @@ our %EXPORT_TAGS = (
           $STATUS_ROUTE
           $TOKEN_REQUEST_ROUTE
           @ROUTES
-          )
+        )
     ]
 );
 

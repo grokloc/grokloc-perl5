@@ -77,7 +77,7 @@ our %EXPORT_TAGS = (
           safe_strs
           safe_unixtime
           safe_kdf_iterations
-          )
+        )
     ],
     validators => [
         qw(
@@ -86,7 +86,7 @@ our %EXPORT_TAGS = (
           safe_strs
           safe_unixtime
           safe_kdf_iterations
-          )
+        )
     ]
 );
 
