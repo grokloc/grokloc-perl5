@@ -15,7 +15,7 @@ use base qw(Exporter);
 
 # Permitted lengths.
 Readonly::Scalar our $STR_MAX      => 4096;
-Readonly::Scalar our $UNIXTIME_MAX => 1_767_139_200;
+Readonly::Scalar our $UNIXTIME_MAX => 1_767_139_200;    # Dec 31, 2025
 
 # safe_objs returns 1 if all objs in $ar are instances of a class in $class.
 sub safe_objs ( $objs, $classes ) {
@@ -44,10 +44,9 @@ sub safe_strs ($ar) {
 
 sub safe_unixtime ($t) {
     return unless ( defined $t );
-    Readonly::Scalar my $DEC_31_2025 => 1_767_139_200;
     return if ( $t !~ /^\d+$/msx );
     return if int($t) < 0;
-    return if int($t) > $DEC_31_2025;    # Dec 31, 2025
+    return if int($t) > $UNIXTIME_MAX;
     return 1;
 }
 
