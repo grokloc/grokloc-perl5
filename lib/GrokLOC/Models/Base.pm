@@ -18,9 +18,11 @@ our $AUTHORITY = 'cpan:bclawsie';
 class GrokLOC::Models::Base {
     has $id :reader;
     has $meta :reader;
+    has $schema_version :reader;
 
     BUILD(%args) {
-        ( $id, $meta ) = ( random_v4uuid, GrokLOC::Models::Meta->new );
+        ( $id, $meta, $schema_version ) =
+          ( random_v4uuid, GrokLOC::Models::Meta->new, 0 );
         if ( exists $args{id} ) {
             croak 'id invalid' unless safe_str( $args{id} );
             $id = $args{id};
@@ -38,6 +40,9 @@ class GrokLOC::Models::Base {
                     ['GrokLOC::Models::Meta'] );
                 $meta = $args{meta};
             }
+        }
+        if ( exists $args{schema_version} ) {
+            $schema_version = $args{schema_version};
         }
     }
 
