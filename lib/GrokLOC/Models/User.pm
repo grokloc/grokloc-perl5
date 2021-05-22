@@ -200,7 +200,7 @@ sub read ( $dbo, $id ) {
       unless safe_objs( [$dbo], [ 'Mojo::SQLite', 'Mojo::Pg' ] );
     croak 'malformed id' unless safe_str($id);
     my $v = $dbo->db->select( $TABLENAME, [qw{*}], { id => $id } )->hash;
-    return unless ( defined $v );    # Not found.
+    return unless ( defined $v );    # Not found -> undef.
     return __PACKAGE__->new(
         id                  => $v->{id},
         api_secret          => $v->{api_secret},
@@ -211,6 +211,7 @@ sub read ( $dbo, $id ) {
         email_digest        => $v->{email_digest},
         org                 => $v->{org},
         password            => $v->{password},
+        schema_version      => $v->{schema_version},
         meta                => GrokLOC::Models::Meta->new(
             ctime  => $v->{ctime},
             mtime  => $v->{mtime},
