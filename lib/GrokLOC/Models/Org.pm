@@ -65,11 +65,11 @@ class GrokLOC::Models::Org extends GrokLOC::Models::Base {
             $master->db->insert(
                 $TABLENAME,
                 {
-                    id      => $self->id,
-                    name    => $self->name,
-                    owner   => $self->owner,
-                    status  => $self->meta->status,
-                    version => $SCHEMA_VERSION,
+                    id             => $self->id,
+                    name           => $self->name,
+                    owner          => $self->owner,
+                    status         => $self->meta->status,
+                    schema_version => $SCHEMA_VERSION,
                 }
             );
         }

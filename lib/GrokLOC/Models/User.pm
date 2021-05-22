@@ -133,7 +133,7 @@ class GrokLOC::Models::User extends GrokLOC::Models::Base {
                     org                 => $self->org,
                     password            => $self->password,
                     status              => $self->meta->status,
-                    version             => $SCHEMA_VERSION,
+                    schema_version      => $SCHEMA_VERSION,
                 }
             );
         }
