@@ -10,15 +10,15 @@ our $AUTHORITY = 'cpan:bclawsie';
 Readonly::Scalar our $APP => <<'APP';
 -- 1 up
 create table if not exists users (
-       id text unique not null,
-       display text not null,
-       display_digest text not null,
-       email text unique not null,
-       email_digest text unique not null,
-       password text not null,
-       org text not null,
        api_secret text unique not null,
        api_secret_digest text unique not null,
+       id text unique not null,
+       display_name text not null,
+       display_name_digest text not null,
+       email text unique not null,
+       email_digest text unique not null,
+       org text not null,
+       password text not null,
        version integer not null default 0,
        status integer not null,
        ctime integer,

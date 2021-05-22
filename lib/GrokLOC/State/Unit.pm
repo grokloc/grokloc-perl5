@@ -47,7 +47,7 @@ sub init () {
         }
     );
 
-    my ( $display, $email, $password ) =
+    my ( $display_name, $email, $password ) =
       ( random_v4uuid, random_v4uuid, random_v4uuid );
 
     $master->db->insert(
@@ -57,11 +57,11 @@ sub init () {
             api_secret =>
               encrypt( $root_user_api_secret, key($key), iv($root_user) ),
             api_secret_digest => sha256_b64($root_user_api_secret),
-            display           => encrypt( $display, key($key), iv($root_user) ),
-            display_digest    => sha256_b64($display),
-            email             => encrypt( $email, key($key), iv($root_user) ),
-            email_digest      => sha256_b64($email),
-            org               => $root_org,
+            display_name => encrypt( $display_name, key($key), iv($root_user) ),
+            display_name_digest => sha256_b64($display_name),
+            email               => encrypt( $email, key($key), iv($root_user) ),
+            email_digest        => sha256_b64($email),
+            org                 => $root_org,
             password => kdf( $password, salt($root_user), $kdf_iterations ),
             status   => $STATUS_ACTIVE,
         }

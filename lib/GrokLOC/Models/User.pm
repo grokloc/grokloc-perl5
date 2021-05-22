@@ -25,8 +25,8 @@ Readonly::Scalar our $TABLENAME      => $USERS_TABLENAME;
 class GrokLOC::Models::User extends GrokLOC::Models::Base {
     has $api_secret :reader;
     has $api_secret_digest :reader;
-    has $display :reader;
-    has $display_digest :reader;
+    has $display_name :reader;
+    has $display_name_digest :reader;
     has $email :reader;
     has $email_digest :reader;
     has $org :reader;
@@ -48,21 +48,21 @@ class GrokLOC::Models::User extends GrokLOC::Models::Base {
         if ( 6 == scalar keys %args ) {
 
             # New user.
-            for my $k (qw(display email org password key)) {
+            for my $k (qw(display_name email org password key)) {
                 croak "missing/malformed $k"
                   unless ( exists $args{$k} && safe_str( $args{$k} ) );
             }
             croak 'missing/malformed kdf iterations'
               unless ( exists $args{kdf_iterations}
                 && safe_kdf_iterations( $args{kdf_iterations} ) );
-            $display_digest = sha256_b64( $args{display} );
-            $email_digest   = sha256_b64( $args{email} );
-            $org            = $args{org};
+            $display_name_digest = sha256_b64( $args{display_name} );
+            $email_digest        = sha256_b64( $args{email} );
+            $org                 = $args{org};
 
             # email_digest is formed from the unique email provided by the user,
             # so it is a useful iv/salt for encryption of display/email.
-            $display =
-              encrypt( $args{display}, key( $args{key} ), iv($email_digest) );
+            $display_name = encrypt( $args{display_name}, key( $args{key} ),
+                iv($email_digest) );
             $email =
               encrypt( $args{email}, key( $args{key} ), iv($email_digest) );
 
@@ -81,21 +81,21 @@ class GrokLOC::Models::User extends GrokLOC::Models::Base {
 
         # Otherwise, this is an existing user.
         for my $k (
-            qw(id api_secret api_secret_digest display
-            display_digest email email_digest org password)
+            qw(id api_secret api_secret_digest display_name
+            display_name_digest email email_digest org password)
           )
         {
             croak "missing/malformed $k"
               unless ( exists $args{$k} && safe_str( $args{$k} ) );
         }
-        $api_secret        = $args{api_secret};
-        $api_secret_digest = $args{api_secret_digest};
-        $display           = $args{display};
-        $display_digest    = $args{display_digest};
-        $email             = $args{email};
-        $email_digest      = $args{email_digest};
-        $org               = $args{org};
-        $password          = $args{password};
+        $api_secret          = $args{api_secret};
+        $api_secret_digest   = $args{api_secret_digest};
+        $display_name        = $args{display_name};
+        $display_name_digest = $args{display_name_digest};
+        $email               = $args{email};
+        $email_digest        = $args{email_digest};
+        $org                 = $args{org};
+        $password            = $args{password};
 
         # Parent constructor validates id and optionally meta.
         return;
@@ -123,17 +123,17 @@ class GrokLOC::Models::User extends GrokLOC::Models::Base {
             $master->db->insert(
                 $TABLENAME,
                 {
-                    id                => $self->id,
-                    api_secret        => $self->api_secret,
-                    api_secret_digest => $self->api_secret_digest,
-                    display           => $self->display,
-                    display_digest    => $self->display_digest,
-                    email             => $self->email,
-                    email_digest      => $self->email_digest,
-                    org               => $self->org,
-                    password          => $self->password,
-                    status            => $self->meta->status,
-                    version           => $SCHEMA_VERSION,
+                    id                  => $self->id,
+                    api_secret          => $self->api_secret,
+                    api_secret_digest   => $self->api_secret_digest,
+                    display_name        => $self->display_name,
+                    display_name_digest => $self->display_name_digest,
+                    email               => $self->email,
+                    email_digest        => $self->email_digest,
+                    org                 => $self->org,
+                    password            => $self->password,
+                    status              => $self->meta->status,
+                    version             => $SCHEMA_VERSION,
                 }
             );
         }
@@ -144,15 +144,15 @@ class GrokLOC::Models::User extends GrokLOC::Models::Base {
         return $RESPONSE_OK;
     }
 
-    method update_display ( $master, $display ) {
-        croak 'malformed display' unless safe_str($display);
+    method update_display_name ( $master, $display_name ) {
+        croak 'malformed display_name' unless safe_str($display_name);
         return $self->_update(
             $master,
             $TABLENAME,
             $self->id,
             {
-                display        => $display,
-                display_digest => sha256_b64($display)
+                display_name        => $display_name,
+                display_name_digest => sha256_b64($display_name)
             }
         );
     }
@@ -172,16 +172,16 @@ class GrokLOC::Models::User extends GrokLOC::Models::Base {
 
     method TO_JSON {
         return {
-            id                => $self->id,
-            api_secret        => $self->api_secret,
-            api_secret_digest => $self->api_secret_digest,
-            display           => $self->display,
-            display_digest    => $self->display_digest,
-            email             => $self->email,
-            email_digest      => $self->email_digest,
-            org               => $self->org,
-            password          => $self->password,
-            meta              => $self->meta,
+            id                  => $self->id,
+            api_secret          => $self->api_secret,
+            api_secret_digest   => $self->api_secret_digest,
+            display_name        => $self->display_name,
+            display_name_digest => $self->display_name_digest,
+            email               => $self->email,
+            email_digest        => $self->email_digest,
+            org                 => $self->org,
+            password            => $self->password,
+            meta                => $self->meta,
         };
     }
 }
@@ -202,16 +202,16 @@ sub read ( $dbo, $id ) {
     my $v = $dbo->db->select( $TABLENAME, [qw{*}], { id => $id } )->hash;
     return unless ( defined $v );    # Not found.
     return __PACKAGE__->new(
-        id                => $v->{id},
-        api_secret        => $v->{api_secret},
-        api_secret_digest => $v->{api_secret_digest},
-        display           => $v->{display},
-        display_digest    => $v->{display_digest},
-        email             => $v->{email},
-        email_digest      => $v->{email_digest},
-        org               => $v->{org},
-        password          => $v->{password},
-        meta              => GrokLOC::Models::Meta->new(
+        id                  => $v->{id},
+        api_secret          => $v->{api_secret},
+        api_secret_digest   => $v->{api_secret_digest},
+        display_name        => $v->{display_name},
+        display_name_digest => $v->{display_name_digest},
+        email               => $v->{email},
+        email_digest        => $v->{email_digest},
+        org                 => $v->{org},
+        password            => $v->{password},
+        meta                => GrokLOC::Models::Meta->new(
             ctime  => $v->{ctime},
             mtime  => $v->{mtime},
             status => $v->{status}

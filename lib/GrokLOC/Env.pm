@@ -24,11 +24,10 @@ Readonly::Array our @LEVELS => ( $UNIT, $DEV, $STAGE, $PROD );
 
 our @EXPORT_OK =
   qw($GROKLOC_ENV $ROOT_ORG $ENCRYPT_KEY $UNIT $DEV $STAGE $PROD @LEVELS);
-our %EXPORT_TAGS = (
-    all => [
-        qw($GROKLOC_ENV $ROOT_ORG $ENCRYPT_KEY $UNIT $DEV $STAGE $PROD @LEVELS)
-    ]
-);
+our %EXPORT_TAGS =
+  ( all =>
+      [qw($GROKLOC_ENV $ROOT_ORG $ENCRYPT_KEY $UNIT $DEV $STAGE $PROD @LEVELS)]
+  );
 
 1;
 

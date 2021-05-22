@@ -31,12 +31,13 @@ croak 'update org status' unless ( $result == $RESPONSE_OK );
 
 my $user;
 
-my ( $display, $email, $password ) = ( 'display', 'email', 'password' );
+my ( $display_name, $email, $password ) =
+  ( 'display_name', 'email', 'password' );
 
 ok(
     lives {
         $user = GrokLOC::Models::User->new(
-            display        => $display,
+            display_name   => $display_name,
             email          => $email,
             org            => $org->id,
             password       => $password,
@@ -51,10 +52,10 @@ is( $user->meta->status, $STATUS_UNCONFIRMED, 'status' );
 is( $user->meta->ctime,  0,                   'ctime' );
 is( $user->meta->mtime,  0,                   'mtime' );
 
-isnt( $user->display,  $display,  'display' );
-isnt( $user->email,    $email,    'email' );
-isnt( $user->password, $password, 'password' );
-isnt( $user->id,       q{},       'id' );
+isnt( $user->display_name, $display_name, 'display_name' );
+isnt( $user->email,        $email,        'email' );
+isnt( $user->password,     $password,     'password' );
+isnt( $user->id,           q{},           'id' );
 
 ok(
     dies {
@@ -66,16 +67,16 @@ ok(
 ok(
     lives {
         GrokLOC::Models::User->new(
-            id                => $user->id,
-            api_secret        => $user->api_secret,
-            api_secret_digest => $user->api_secret_digest,
-            display           => $user->display,
-            display_digest    => $user->display_digest,
-            email             => $user->email,
-            email_digest      => $user->email_digest,
-            org               => $user->org,
-            password          => $user->password,
-            meta              => $user->meta,
+            id                  => $user->id,
+            api_secret          => $user->api_secret,
+            api_secret_digest   => $user->api_secret_digest,
+            display_name        => $user->display_name,
+            display_name_digest => $user->display_name_digest,
+            email               => $user->email,
+            email_digest        => $user->email_digest,
+            org                 => $user->org,
+            password            => $user->password,
+            meta                => $user->meta,
         );
     },
     'all args'
@@ -115,7 +116,7 @@ is( $result, $RESPONSE_CONFLICT, 'insert duplicate' );
 ok(
     lives {
         my $bad_org_user = GrokLOC::Models::User->new(
-            display        => $display,
+            display_name   => $display_name,
             email          => $email,
             org            => random_v4uuid,
             password       => $password,
@@ -153,16 +154,16 @@ ok(
 
 isnt( defined($not_found), 1 );
 
-my $new_display = random_v4uuid;
+my $new_display_name = random_v4uuid;
 
 ok(
     lives {
-        $result = $user->update_display( $st->master, $new_display );
+        $result = $user->update_display_name( $st->master, $new_display_name );
     },
     'update password'
 ) or note($@);
 
-is( $result, $RESPONSE_OK, 'update display ok' );
+is( $result, $RESPONSE_OK, 'update display_name ok' );
 
 ok(
     lives {
@@ -172,11 +173,11 @@ ok(
     'read'
 ) or note($@);
 
-is( $read_user->display, $new_display, 'update display' );
+is( $read_user->display_name, $new_display_name, 'update display_name' );
 is(
-    $read_user->display_digest,
-    sha256_b64($new_display),
-    'update display digest'
+    $read_user->display_name_digest,
+    sha256_b64($new_display_name),
+    'update display_name digest'
 );
 
 my $new_password = random_v4uuid;
