@@ -13,7 +13,6 @@ use base qw(Exporter);
 Readonly::Scalar our $GROKLOC_ENV => 'GROKLOC_ENV';
 Readonly::Scalar our $ROOT_ORG    => 'ROOT_ORG';
 Readonly::Scalar our $ENCRYPT_KEY => 'ENCRYPT_KEY';
-Readonly::Scalar our $SIGN_KEY    => 'SIGN_KEY';
 
 # Run levels.
 Readonly::Scalar our $UNIT  => 'UNIT';
@@ -24,10 +23,10 @@ Readonly::Scalar our $PROD  => 'PROD';
 Readonly::Array our @LEVELS => ( $UNIT, $DEV, $STAGE, $PROD );
 
 our @EXPORT_OK =
-  qw($GROKLOC_ENV $ROOT_ORG $ENCRYPT_KEY $SIGN_KEY $UNIT $DEV $STAGE $PROD @LEVELS);
+  qw($GROKLOC_ENV $ROOT_ORG $ENCRYPT_KEY $UNIT $DEV $STAGE $PROD @LEVELS);
 our %EXPORT_TAGS = (
     all => [
-        qw($GROKLOC_ENV $ROOT_ORG $ENCRYPT_KEY $SIGN_KEY $UNIT $DEV $STAGE $PROD @LEVELS)
+        qw($GROKLOC_ENV $ROOT_ORG $ENCRYPT_KEY $UNIT $DEV $STAGE $PROD @LEVELS)
     ]
 );
 
