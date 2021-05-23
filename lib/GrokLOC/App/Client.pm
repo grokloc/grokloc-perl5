@@ -43,6 +43,7 @@ class GrokLOC::App::Client {
     method token_request {
         my $now = time;
 
+        # Token already passed, just return it.
         if (   defined $_token
             && defined $_token_time
             && $_token_time > $now )

@@ -40,6 +40,9 @@ sub routes_init ($self) {
     # Root-authenticated status.
     $with_session->get($STATUS)->to('api-v0-status#status');
 
+    # Create a new org.
+    $with_session->post($ORG)->('api-v0-org#create');
+    
     $r->any(
         '/*whatever' => { whatever => q{} } => sub ($c) {
             my $whatever = $c->param('whatever');

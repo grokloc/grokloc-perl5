@@ -23,11 +23,11 @@ class GrokLOC::Models::Org extends GrokLOC::Models::Base {
     has $name :reader;
     has $owner :reader;
 
-   # Constructor has two forms:
-   # 1. New org. In this case, there must be exactly one field in the args hash:
-   #    (name). New orgs have default $NO_OWNER.
-   # 2. Existing org. In this case, the (owner, id) must also be provided, while
-   #    the meta struct is optional.
+    # Constructor has two forms:
+    # 1. New org. In this case, there must be exactly one field in the args hash:
+    #    (name). New orgs have default $NO_OWNER.
+    # 2. Existing org. In this case, the (owner, id) must also be provided, while
+    #    the meta struct is optional.
     BUILD(%args) {
         croak 'missing/malformed name'
           unless ( exists $args{name} && safe_str( $args{name} ) );
