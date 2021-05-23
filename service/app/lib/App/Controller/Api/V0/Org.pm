@@ -18,6 +18,7 @@ sub create ( $c ) {
         $c->render( app_msg( 500, { error => 'internal error' } ) );
         return;
     }
+
     # Only root can create an org.
     if ( $c->stash($STASH_AUTH) != $TOKEN_ROOT ) {
         $c->render( app_msg( 403, { error => 'inadequate authorization' } ) );
