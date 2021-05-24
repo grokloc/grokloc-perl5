@@ -144,14 +144,16 @@ class GrokLOC::Models::User extends GrokLOC::Models::Base {
         return $RESPONSE_OK;
     }
 
-    method update_display_name ( $master, $display_name ) {
+    method update_display_name ( $master, $display_name, $key ) {
         croak 'malformed display_name' unless safe_str($display_name);
         return $self->_update(
             $master,
             $TABLENAME,
             $self->id,
             {
-                display_name        => $display_name,
+                display_name => encrypt(
+                    $display_name, key($key), iv( $self->email_digest )
+                ),
                 display_name_digest => sha256_b64($display_name)
             }
         );
@@ -189,30 +191,33 @@ class GrokLOC::Models::User extends GrokLOC::Models::Base {
 # read is a static method for creating a new Org from an existing row.
 # Call like: ;
 # try {
-#     $user = GrokLOC::Models::User::read( $dbo, $id );
+#     $user = GrokLOC::Models::User::read( $dbo, $id, $key );
 #     ...$user is undef if the row isn't found.
 # }
 # catch ($e) {
 #     ...otherwise unknown error
 # }
-sub read ( $dbo, $id ) {
+sub read ( $dbo, $id, $key ) {
     croak 'db ref'
       unless safe_objs( [$dbo], [ 'Mojo::SQLite', 'Mojo::Pg' ] );
     croak 'malformed id' unless safe_str($id);
     my $v = $dbo->db->select( $TABLENAME, [qw{*}], { id => $id } )->hash;
     return unless ( defined $v );    # Not found -> undef.
+
     return __PACKAGE__->new(
-        id                  => $v->{id},
-        api_secret          => $v->{api_secret},
-        api_secret_digest   => $v->{api_secret_digest},
-        display_name        => $v->{display_name},
+        id         => $v->{id},
+        api_secret =>
+          decrypt( $v->{api_secret}, key($key), iv( $v->{email_digest} ) ),
+        api_secret_digest => $v->{api_secret_digest},
+        display_name      =>
+          decrypt( $v->{display_name}, key($key), iv( $v->{email_digest} ) ),
         display_name_digest => $v->{display_name_digest},
-        email               => $v->{email},
-        email_digest        => $v->{email_digest},
-        org                 => $v->{org},
-        password            => $v->{password},
-        schema_version      => $v->{schema_version},
-        meta                => GrokLOC::Models::Meta->new(
+        email => decrypt( $v->{email}, key($key), iv( $v->{email_digest} ) ),
+        email_digest   => $v->{email_digest},
+        org            => $v->{org},
+        password       => $v->{password},
+        schema_version => $v->{schema_version},
+        meta           => GrokLOC::Models::Meta->new(
             ctime  => $v->{ctime},
             mtime  => $v->{mtime},
             status => $v->{status}

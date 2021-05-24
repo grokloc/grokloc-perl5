@@ -10,6 +10,8 @@ use Mojo::SQLite;
 use experimental qw(signatures);
 use GrokLOC::Env qw(:all);
 use GrokLOC::Models qw(:all);
+use GrokLOC::Models::Org;
+use GrokLOC::Models::User;
 use GrokLOC::Schemas;
 use GrokLOC::Security::Crypt qw(:all);
 use GrokLOC::State;
@@ -50,20 +52,23 @@ sub init () {
     my ( $display_name, $email, $password ) =
       ( random_v4uuid, random_v4uuid, random_v4uuid );
 
+    my $email_digest = sha256_b64($email);
+
     $master->db->insert(
         $USERS_TABLENAME,
         {
             id         => $root_user,
             api_secret =>
-              encrypt( $root_user_api_secret, key($key), iv($root_user) ),
+              encrypt( $root_user_api_secret, key($key), iv($email_digest) ),
             api_secret_digest => sha256_b64($root_user_api_secret),
-            display_name => encrypt( $display_name, key($key), iv($root_user) ),
+            display_name      =>
+              encrypt( $display_name, key($key), iv($email_digest) ),
             display_name_digest => sha256_b64($display_name),
-            email               => encrypt( $email, key($key), iv($root_user) ),
-            email_digest        => sha256_b64($email),
-            org                 => $root_org,
-            password => kdf( $password, salt($root_user), $kdf_iterations ),
-            status   => $STATUS_ACTIVE,
+            email        => encrypt( $email, key($key), iv($email_digest) ),
+            email_digest => $email_digest,
+            org          => $root_org,
+            password     => kdf( $password, salt($root_user), $kdf_iterations ),
+            status       => $STATUS_ACTIVE,
         }
     );
 

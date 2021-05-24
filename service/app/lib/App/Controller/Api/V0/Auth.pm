@@ -30,8 +30,8 @@ sub with_session ( $c ) {
     my $user_id = $c->req->headers->header($X_GROKLOC_ID);
     my $user;
     try {
-        $user =
-          GrokLOC::Models::User::read( $c->st->random_replica(), $user_id );
+        $user = GrokLOC::Models::User::read( $c->st->random_replica(),
+            $user_id, $c->st->key );
     }
     catch ($e) {
         $c->app->log->error("internal error reading user $user_id:$e");
@@ -104,17 +104,9 @@ sub new_token ( $c ) {
         return;
     }
     my $user = $c->stash($STASH_USER);
-    my $api_secret;
-    try {
-        $api_secret =
-          decrypt( $user->api_secret, key( $c->st->key ), iv( $user->id ) );
-    }
-    catch ($e) {
-        $c->app->log->error("cannot decrypt api_secret for user:$user->id:$e");
-        $c->render( app_msg( 500, { error => 'internal error' } ) );
-        return;
-    }
-    unless ( verify_token_request( $token_request, $user->id, $api_secret ) ) {
+    unless (
+        verify_token_request( $token_request, $user->id, $user->api_secret ) )
+    {
         $c->render( app_msg( 401, { error => 'bad token request' } ) );
         return;
     }

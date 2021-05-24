@@ -1,8 +1,8 @@
 package GrokLOC::Models::Org;
-use Object::Pad;
-use strictures 2;
 use Carp qw(croak);
+use Object::Pad;
 use Readonly;
+use strictures 2;
 use experimental qw(signatures try);
 use GrokLOC::Models qw(:all);
 use GrokLOC::Models::Base;
