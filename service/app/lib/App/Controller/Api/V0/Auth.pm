@@ -31,7 +31,7 @@ sub with_session ( $c ) {
     my $user;
     try {
         $user = GrokLOC::Models::User::read( $c->st->random_replica(),
-            $user_id, $c->st->key );
+            $c->st->key, $user_id );
     }
     catch ($e) {
         $c->app->log->error("internal error reading user $user_id:$e");

@@ -135,8 +135,8 @@ my $read_user;
 ok(
     lives {
         $read_user =
-          GrokLOC::Models::User::read( $st->random_replica(), $user->id,
-            $st->key );
+          GrokLOC::Models::User::read( $st->random_replica(), $st->key,
+            $user->id );
     },
     'read'
 ) or note($@);
@@ -148,8 +148,8 @@ my $not_found;
 ok(
     lives {
         $not_found =
-          GrokLOC::Models::User::read( $st->random_replica(), random_v4uuid,
-            $st->key );
+          GrokLOC::Models::User::read( $st->random_replica(), $st->key,
+            random_v4uuid );
     },
     'read not found'
 ) or note($@);
@@ -160,8 +160,8 @@ my $new_display_name = random_v4uuid;
 
 ok(
     lives {
-        $result = $user->update_display_name( $st->master, $new_display_name,
-            $st->key );
+        $result = $user->update_display_name( $st->master, $st->key,
+            $new_display_name );
     },
     'update display_name'
 ) or note($@);
@@ -171,8 +171,8 @@ is( $result, $RESPONSE_OK, 'update display_name ok' );
 ok(
     lives {
         $read_user =
-          GrokLOC::Models::User::read( $st->random_replica(), $user->id,
-            $st->key );
+          GrokLOC::Models::User::read( $st->random_replica(), $st->key,
+            $user->id );
     },
     'read'
 ) or note($@);
@@ -199,8 +199,8 @@ is( $result, $RESPONSE_OK, 'update password ok' );
 ok(
     lives {
         $read_user =
-          GrokLOC::Models::User::read( $st->random_replica(), $user->id,
-            $st->key );
+          GrokLOC::Models::User::read( $st->random_replica(), $st->key,
+            $user->id );
     },
     'read'
 ) or note($@);
@@ -222,8 +222,8 @@ is( $result, $RESPONSE_OK, 'update status ok' );
 ok(
     lives {
         $read_user =
-          GrokLOC::Models::User::read( $st->random_replica(), $user->id,
-            $st->key );
+          GrokLOC::Models::User::read( $st->random_replica(), $st->key,
+            $user->id );
     },
     'read'
 ) or note($@);

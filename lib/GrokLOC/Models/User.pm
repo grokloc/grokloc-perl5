@@ -144,7 +144,7 @@ class GrokLOC::Models::User extends GrokLOC::Models::Base {
         return $RESPONSE_OK;
     }
 
-    method update_display_name ( $master, $display_name, $key ) {
+    method update_display_name ( $master, $key, $display_name ) {
         croak 'malformed display_name' unless safe_str($display_name);
         return $self->_update(
             $master,
@@ -190,13 +190,13 @@ class GrokLOC::Models::User extends GrokLOC::Models::Base {
 # read is a static method for creating a new Org from an existing row.
 # Call like: ;
 # try {
-#     $user = GrokLOC::Models::User::read( $dbo, $id, $key );
+#     $user = GrokLOC::Models::User::read( $dbo, $key, $id );
 #     ...$user is undef if the row isn't found.
 # }
 # catch ($e) {
 #     ...otherwise unknown error
 # }
-sub read ( $dbo, $id, $key ) {
+sub read ( $dbo, $key, $id ) {
     croak 'db ref'
       unless safe_objs( [$dbo], [ 'Mojo::SQLite', 'Mojo::Pg' ] );
     croak 'malformed id' unless safe_str($id);
