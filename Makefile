@@ -21,12 +21,12 @@ RUN          = $(DOCKER_RUN) -v $(CWD):$(BASE) -w $(BASE) $(UNIT_ENVS) $(PORTS) 
 # Base/CI image.
 .PHONY: docker-ci
 docker-ci:
-	$(DOCKER) build . -f Dockerfile.ci -t $(IMG_CI)
+	$(DOCKER) build . -f Dockerfile -t $(IMG_CI)
 
 # Dev image.
 .PHONY: docker-dev
 docker-dev: docker-ci
-	$(DOCKER) build . -f Dockerfile.dev -t $(IMG_DEV)
+	$(DOCKER) tag $(IMG_CI) $(IMG_DEV)
 
 # Shell in container.
 .PHONY: shell
