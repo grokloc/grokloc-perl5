@@ -11,24 +11,21 @@ use GrokLOC::Security::Input qw(:validators);
 
 # ABSTRACT: Useful testing utilities.
 
-## no critic (RequireFinalReturn);
-
 our $VERSION   = '0.01';
 our $AUTHORITY = 'cpan:bclawsie';
 
 # Create a new user with ownership of a new org.
-sub test_user_org ( $st ) {
-    croak 'state ref' unless safe_objs( [$st], ['GrokLOC::State'] );
+sub org_user ( $master, $key, $kdf_iterations ) {
 
     # Make org.
     my $org = GrokLOC::Models::Org->new( name => random_v4uuid );
     try {
         # Insert the org.
-        my $insert_result = $org->insert( $st->master );
+        my $insert_result = $org->insert($master);
         croak 'org insert fail' unless $insert_result == $RESPONSE_OK;
 
         # Update as active.
-        my $update_result = $org->update_status( $st->master, $STATUS_ACTIVE );
+        my $update_result = $org->update_status( $master, $STATUS_ACTIVE );
         croak 'org update fail' unless $update_result == $RESPONSE_OK;
     }
     catch ($e) {
@@ -40,17 +37,16 @@ sub test_user_org ( $st ) {
         display_name => random_v4uuid,
         email        => random_v4uuid,
         org          => $org->id,
-        password     =>
-          kdf( random_v4uuid, salt(random_v4uuid), $st->kdf_iterations ),
-        key => $st->key,
+        password => kdf( random_v4uuid, salt(random_v4uuid), $kdf_iterations ),
+        key      => $key,
     );
     try {
         # Insert the user.
-        my $insert_result = $user->insert( $st->master );
+        my $insert_result = $user->insert($master);
         croak 'user insert fail' unless $insert_result == $RESPONSE_OK;
 
         # Update as active.
-        my $update_result = $user->update_status( $st->master, $STATUS_ACTIVE );
+        my $update_result = $user->update_status( $master, $STATUS_ACTIVE );
         croak 'user update fail' unless $update_result == $RESPONSE_OK;
     }
     catch ($e) {
@@ -59,14 +55,20 @@ sub test_user_org ( $st ) {
 
     # Set the owner of the org to the user.
     try {
-        my $update_result = $org->update_owner( $st->master, $user->id );
+        my $update_result = $org->update_owner( $master, $user->id );
         croak 'org owner update fail' unless $update_result == $RESPONSE_OK;
     }
     catch ($e) {
         croak 'org owner - unknown exception'
     }
 
-    return $org, $user;
+    # Re-read both org and user before returning.
+    my $read_org = GrokLOC::Models::Org::read( $master, $org->id );
+    croak 'read org failed' unless defined $read_org;
+    my $read_user = GrokLOC::Models::User::read( $master, $key, $user->id );
+    croak 'read user failed' unless defined $read_user;
+
+    return $read_org, $read_user;
 }
 
 1;
