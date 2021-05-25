@@ -15,7 +15,7 @@ use GrokLOC::Models qw(:all);
 use GrokLOC::Models::Org;
 use GrokLOC::Models::User;
 use GrokLOC::Security::Crypt qw(:all);
-use GrokLOC::State::Init qw(state_init);
+use GrokLOC::State::Init qw(:all);
 
 my $t   = Test::Mojo->new('App');
 my $url = Mojo::URL->new( $t->ua->server->url->to_string );
@@ -34,7 +34,7 @@ $t->post_ok(
     }
 )->status_is(404);
 
-my $root_user = $ENV{ROOT_USER} // croak 'unit env root user';
+my $root_user = $ST->root_user;
 
 # Bad token.
 $t->post_ok(
@@ -45,8 +45,7 @@ $t->post_ok(
 )->status_is(401);
 
 # Unencrypted from env.
-my $root_user_api_secret = $ENV{ROOT_USER_API_SECRET}
-  // croak 'unit env root user api secret';
+my $root_user_api_secret = $ST->root_user_api_secret;
 
 my $token_request = encode_token_request( $root_user, $root_user_api_secret );
 

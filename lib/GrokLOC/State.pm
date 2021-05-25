@@ -18,29 +18,44 @@ class GrokLOC::State {
     has $master :reader;
     has @replicas;
     has $kdf_iterations :reader;
-    has $root_org :reader;
     has $key :reader;
+    has $root_org :reader;
+    has $root_user :reader;
+    has $root_user_api_secret :reader;
 
     BUILD(%args) {
         croak 'invalid master'
-          unless ( exists $args{master}
-            && safe_objs( [ $args{master} ], [ 'Mojo::SQLite', 'Mojo::Pg' ] ) );
+            unless ( exists $args{master}
+                     && safe_objs( [ $args{master} ], [ 'Mojo::SQLite', 'Mojo::Pg' ] ) );
         $master = $args{master};
+
         croak 'invalid replicas'
-          unless ( exists $args{replicas}
-            && ref( $args{replicas} ) eq 'ARRAY'
-            && safe_objs( $args{replicas}, [ 'Mojo::SQLite', 'Mojo::Pg' ] ) );
+            unless ( exists $args{replicas}
+                     && ref( $args{replicas} ) eq 'ARRAY'
+                     && safe_objs( $args{replicas}, [ 'Mojo::SQLite', 'Mojo::Pg' ] ) );
         @replicas = @{ $args{replicas} };
+        
         croak 'invalid kdf iterations'
-          unless ( exists $args{kdf_iterations}
-            && safe_kdf_iterations( $args{kdf_iterations} ) );
+            unless ( exists $args{kdf_iterations}
+                     && safe_kdf_iterations( $args{kdf_iterations} ) );
         $kdf_iterations = $args{kdf_iterations};
-        croak 'invalid root_org'
-          unless ( exists $args{root_org} && safe_str( $args{root_org} ) );
-        $root_org = $args{root_org};
+
         croak 'invalid key'
-          unless ( exists $args{key} && safe_str( $args{key} ) );
+            unless ( exists $args{key} && safe_str( $args{key} ) );
         $key = $args{key};
+        
+        croak 'invalid root_org'
+            unless ( exists $args{root_org} && safe_str( $args{root_org} ) );
+        $root_org = $args{root_org};
+
+        croak 'invalid root_user'
+            unless ( exists $args{root_user} && safe_str( $args{root_user} ) );        
+        $root_user = $args{root_user};
+        
+        croak 'invalid root_user_api_secret'
+            unless ( exists $args{root_user_api_secret} &&
+                     safe_str( $args{root_user_api_secret} ) );
+        $root_user_api_secret = $args{root_user_api_secret};
     }
 
     method random_replica {

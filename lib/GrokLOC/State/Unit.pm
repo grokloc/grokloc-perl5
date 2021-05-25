@@ -75,8 +75,10 @@ sub init () {
         master         => $master,
         replicas       => [$master],
         kdf_iterations => $kdf_iterations,
-        root_org       => $root_org,
         key            => $key,
+        root_org       => $root_org,
+        root_user      => $root_user,
+        root_user_api_secret => $root_user_api_secret,
     );
 }
 
