@@ -163,6 +163,8 @@ class GrokLOC::Models::User extends GrokLOC::Models::Base {
         return $self->_update_status( $master, $TABLENAME, $self->id, $status );
     }
 
+    # NOTE: TO_JSON serializes the entire object - you would not use this
+    # to return user information on the web.
     method TO_JSON {
         return {
             id                  => $self->id,
