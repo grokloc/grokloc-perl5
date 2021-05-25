@@ -33,9 +33,9 @@ class GrokLOC::Models::User extends GrokLOC::Models::Base {
     has $password :reader;
 
     # Constructor has two forms:
-    # 1. New user. In this case, there must be exactly six
+    # 1. New user. In this case, there must be exactly five
     #    fields in the args hash:
-    #    (display, email, org, password, key, kdf_iterations).
+    #    (display, email, org, password, key).
     #    The last two fields are used to perform encryption on
     #    cleartext fields.
     # 2. Existing user. In this case, the (key, kdf_iterations)
@@ -46,16 +46,13 @@ class GrokLOC::Models::User extends GrokLOC::Models::Base {
     #     display_digest, email, email_digest, org, password).
     # NOTE: passwords are always assumed to be derived already.
     BUILD(%args) {
-        if ( 6 == scalar keys %args ) {
+        if ( 5 == scalar keys %args ) {
 
             # New user.
             for my $k (qw(display_name email org password key)) {
                 croak "missing/malformed $k"
                   unless ( exists $args{$k} && safe_str( $args{$k} ) );
             }
-            croak 'missing/malformed kdf iterations'
-              unless ( exists $args{kdf_iterations}
-                && safe_kdf_iterations( $args{kdf_iterations} ) );
             $display_name_digest = sha256_b64( $args{display_name} );
             $email_digest        = sha256_b64( $args{email} );
             $org                 = $args{org};
@@ -156,9 +153,8 @@ class GrokLOC::Models::User extends GrokLOC::Models::Base {
         );
     }
 
-    method update_password ( $master, $password, $kdf_iterations ) {
+    method update_password ( $master, $password ) {
         croak 'malformed password' unless safe_str($password);
-        croak 'kdf iterations'     unless safe_kdf_iterations($kdf_iterations);
         return $self->_update( $master, $TABLENAME, $self->id,
             { password => $password } );
     }

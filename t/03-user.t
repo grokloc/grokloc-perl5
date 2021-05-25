@@ -39,12 +39,11 @@ my $password = kdf( $raw_password, salt(random_v4uuid), $st->kdf_iterations );
 ok(
     lives {
         $user = GrokLOC::Models::User->new(
-            display_name   => $display_name,
-            email          => $email,
-            org            => $org->id,
-            password       => $password,
-            key            => $st->key,
-            kdf_iterations => $st->kdf_iterations,
+            display_name => $display_name,
+            email        => $email,
+            org          => $org->id,
+            password     => $password,
+            key          => $st->key,
         );
     },
     'new'
@@ -119,12 +118,11 @@ is( $result, $RESPONSE_CONFLICT, 'insert duplicate' );
 ok(
     lives {
         my $bad_org_user = GrokLOC::Models::User->new(
-            display_name   => $display_name,
-            email          => $email,
-            org            => random_v4uuid,
-            password       => $password,
-            key            => $st->key,
-            kdf_iterations => $st->kdf_iterations,
+            display_name => $display_name,
+            email        => $email,
+            org          => random_v4uuid,
+            password     => $password,
+            key          => $st->key,
         );
         $result = $bad_org_user->insert( $st->master );
     },
@@ -193,8 +191,7 @@ my $new_password =
 
 ok(
     lives {
-        $result = $user->update_password( $st->master, $new_password,
-            $st->kdf_iterations );
+        $result = $user->update_password( $st->master, $new_password );
     },
     'update password'
 ) or note($@);

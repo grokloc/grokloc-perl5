@@ -6,6 +6,7 @@ use experimental qw(signatures try);
 use GrokLOC::Models qw(:all);
 use GrokLOC::Models::Org;
 use GrokLOC::Models::User;
+use GrokLOC::Security::Crypt qw(:all);
 use GrokLOC::Security::Input qw(:validators);
 
 # ABSTRACT: Useful testing utilities.
@@ -36,12 +37,12 @@ sub test_user_org ( $st ) {
 
     # Make user.
     my $user = GrokLOC::Models::User->new(
-        display_name   => random_v4uuid,
-        email          => random_v4uuid,
-        org            => $org->id,
-        password       => random_v4uuid,
-        key            => $st->key,
-        kdf_iterations => $st->kdf_iterations,
+        display_name => random_v4uuid,
+        email        => random_v4uuid,
+        org          => $org->id,
+        password     =>
+          kdf( random_v4uuid, salt(random_v4uuid), $st->kdf_iterations ),
+        key => $st->key,
     );
     try {
         # Insert the user.
