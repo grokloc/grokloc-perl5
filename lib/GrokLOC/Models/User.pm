@@ -44,6 +44,7 @@ class GrokLOC::Models::User extends GrokLOC::Models::Base {
     #    The args passed must be
     #    (id, api_secret, api_secret_digest, display,
     #     display_digest, email, email_digest, org, password).
+    # NOTE: passwords are always assumed to be derived already.
     BUILD(%args) {
         if ( 6 == scalar keys %args ) {
 
@@ -58,6 +59,7 @@ class GrokLOC::Models::User extends GrokLOC::Models::Base {
             $display_name_digest = sha256_b64( $args{display_name} );
             $email_digest        = sha256_b64( $args{email} );
             $org                 = $args{org};
+            $password            = $args{password};
 
             # email_digest is formed from the unique email provided by the user,
             # so it is a useful iv/salt for encryption of display/email.
@@ -70,10 +72,6 @@ class GrokLOC::Models::User extends GrokLOC::Models::Base {
             $api_secret =
               encrypt( $_api_secret, $args{key}, iv($email_digest) );
             $api_secret_digest = sha256_b64($_api_secret);
-
-            # password is one-time hashed.
-            $password = kdf( $args{password}, salt($email_digest),
-                $args{kdf_iterations} );
 
             # Parent constructor will provide id, meta.
             return;
@@ -161,10 +159,8 @@ class GrokLOC::Models::User extends GrokLOC::Models::Base {
     method update_password ( $master, $password, $kdf_iterations ) {
         croak 'malformed password' unless safe_str($password);
         croak 'kdf iterations'     unless safe_kdf_iterations($kdf_iterations);
-        my $derived =
-          kdf( $password, salt( $self->email_digest ), $kdf_iterations );
         return $self->_update( $master, $TABLENAME, $self->id,
-            { password => $derived } );
+            { password => $password } );
     }
 
     method update_status ( $master, $status ) {

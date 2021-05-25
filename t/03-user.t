@@ -31,8 +31,10 @@ croak 'update org status' unless ( $result == $RESPONSE_OK );
 
 my $user;
 
-my ( $display_name, $email, $password ) =
-  ( 'display_name', 'email', 'password' );
+my ( $display_name, $email ) = ( 'display_name', 'email' );
+
+my $raw_password = random_v4uuid;
+my $password = kdf( $raw_password, salt(random_v4uuid), $st->kdf_iterations );
 
 ok(
     lives {
@@ -48,13 +50,14 @@ ok(
     'new'
 ) or note($@);
 
+is( $user->password,     $password,           'password' );
 is( $user->meta->status, $STATUS_UNCONFIRMED, 'status' );
 is( $user->meta->ctime,  0,                   'ctime' );
 is( $user->meta->mtime,  0,                   'mtime' );
 
+isnt( $user->password,     $raw_password, 'password' );
 isnt( $user->display_name, $display_name, 'display_name' );
 isnt( $user->email,        $email,        'email' );
-isnt( $user->password,     $password,     'password' );
 isnt( $user->id,           q{},           'id' );
 
 ok(
@@ -184,7 +187,9 @@ is(
     'update display_name digest'
 );
 
-my $new_password = random_v4uuid;
+my $new_raw_password = random_v4uuid;
+my $new_password =
+  kdf( $new_raw_password, salt(random_v4uuid), $st->kdf_iterations );
 
 ok(
     lives {
@@ -205,7 +210,7 @@ ok(
     'read'
 ) or note($@);
 
-is( kdf_verify( $read_user->password, $new_password ),
+is( kdf_verify( $read_user->password, $new_raw_password ),
     1, 'verify new password' );
 isnt( kdf_verify( $read_user->password, random_v4uuid ),
     1, 'not-verify wrong password' );
