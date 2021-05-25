@@ -13,9 +13,6 @@ jobs:
         GROKLOC_ENV: "UNIT"
         APP_HOST: "localhost"
         APP_PORT: "3000"
-        ROOT_ORG: "893005f5-f8aa-4a8c-9535-df3210e78d75"
-        ROOT_USER: "aa244ac4-466a-427c-bf77-742f5f918469"
-        ROOT_USER_API_SECRET: "cb07a73a-f15e-4b2d-87ad-3e17c25cc690"
         CI: "1"
     steps:
       - uses: actions/checkout@v2
