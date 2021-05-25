@@ -61,14 +61,14 @@ class GrokLOC::Models::User extends GrokLOC::Models::Base {
 
             # email_digest is formed from the unique email provided by the user,
             # so it is a useful iv/salt for encryption of display/email.
-            $display_name = encrypt( $args{display_name}, key( $args{key} ),
-                iv($email_digest) );
+            $display_name =
+              encrypt( $args{display_name}, $args{key}, iv($email_digest) );
             $email =
-              encrypt( $args{email}, key( $args{key} ), iv($email_digest) );
+              encrypt( $args{email}, $args{key}, iv($email_digest) );
 
             my $_api_secret = random_v4uuid;
             $api_secret =
-              encrypt( $_api_secret, key( $args{key} ), iv($email_digest) );
+              encrypt( $_api_secret, $args{key}, iv($email_digest) );
             $api_secret_digest = sha256_b64($_api_secret);
 
             # password is one-time hashed.
@@ -151,9 +151,8 @@ class GrokLOC::Models::User extends GrokLOC::Models::Base {
             $TABLENAME,
             $self->id,
             {
-                display_name => encrypt(
-                    $display_name, key($key), iv( $self->email_digest )
-                ),
+                display_name =>
+                  encrypt( $display_name, $key, iv( $self->email_digest ) ),
                 display_name_digest => sha256_b64($display_name)
             }
         );
@@ -207,15 +206,15 @@ sub read ( $dbo, $id, $key ) {
     return __PACKAGE__->new(
         id         => $v->{id},
         api_secret =>
-          decrypt( $v->{api_secret}, key($key), iv( $v->{email_digest} ) ),
+          decrypt( $v->{api_secret}, $key, iv( $v->{email_digest} ) ),
         api_secret_digest => $v->{api_secret_digest},
         display_name      =>
-          decrypt( $v->{display_name}, key($key), iv( $v->{email_digest} ) ),
+          decrypt( $v->{display_name}, $key, iv( $v->{email_digest} ) ),
         display_name_digest => $v->{display_name_digest},
-        email => decrypt( $v->{email}, key($key), iv( $v->{email_digest} ) ),
-        email_digest   => $v->{email_digest},
-        org            => $v->{org},
-        password       => $v->{password},
+        email        => decrypt( $v->{email}, $key, iv( $v->{email_digest} ) ),
+        email_digest => $v->{email_digest},
+        org          => $v->{org},
+        password     => $v->{password},
         schema_version => $v->{schema_version},
         meta           => GrokLOC::Models::Meta->new(
             ctime  => $v->{ctime},

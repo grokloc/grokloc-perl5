@@ -29,7 +29,7 @@ sub init () {
     $master->migrations->migrate(0)->migrate || croak "migrate: $ERRNO";
 
     my $kdf_iterations = 1;
-    my $key            = random_v4uuid;
+    my $key            = key(random_v4uuid);
 
     # Set up the initial test root org and user. Tests need these.
     my $root_org             = $ENV{ROOT_ORG}  // croak 'unit env root org';
@@ -59,16 +59,15 @@ sub init () {
         {
             id         => $root_user,
             api_secret =>
-              encrypt( $root_user_api_secret, key($key), iv($email_digest) ),
+              encrypt( $root_user_api_secret, $key, iv($email_digest) ),
             api_secret_digest => sha256_b64($root_user_api_secret),
-            display_name      =>
-              encrypt( $display_name, key($key), iv($email_digest) ),
+            display_name => encrypt( $display_name, $key, iv($email_digest) ),
             display_name_digest => sha256_b64($display_name),
-            email        => encrypt( $email, key($key), iv($email_digest) ),
-            email_digest => $email_digest,
-            org          => $root_org,
-            password     => kdf( $password, salt($root_user), $kdf_iterations ),
-            status       => $STATUS_ACTIVE,
+            email               => encrypt( $email, $key, iv($email_digest) ),
+            email_digest        => $email_digest,
+            org                 => $root_org,
+            password => kdf( $password, salt($root_user), $kdf_iterations ),
+            status   => $STATUS_ACTIVE,
         }
     );
 

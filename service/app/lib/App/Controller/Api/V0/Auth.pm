@@ -68,7 +68,7 @@ sub with_session ( $c ) {
     if ( $c->req->headers->header($AUTHORIZATION) ) {
         try {
             my $encoded = $c->req->headers->header($AUTHORIZATION);
-            my $decoded = decode_token( $encoded, key( $c->st->key ) );
+            my $decoded = decode_token( $encoded, $c->st->key );
         }
         catch ($e) {
             $c->render( app_msg( 400, { error => 'refresh token' } ) );
@@ -112,7 +112,7 @@ sub new_token ( $c ) {
     }
     my $token;
     try {
-        $token = encode_token( $user->id, key( $c->st->key ) );
+        $token = encode_token( $user->id, $c->st->key );
     }
     catch ($e) {
         $c->app->log->error("cannot encode token for user:$user->id:$e");
