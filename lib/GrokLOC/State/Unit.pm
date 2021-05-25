@@ -32,10 +32,9 @@ sub init () {
     my $key            = key(random_v4uuid);
 
     # Set up the initial test root org and user. Tests need these.
-    my $root_org             = $ENV{ROOT_ORG}  // croak 'unit env root org';
-    my $root_user            = $ENV{ROOT_USER} // croak 'unit env root user';
-    my $root_user_api_secret = $ENV{ROOT_USER_API_SECRET}
-      // croak 'unit env root user api secret';
+    my $root_org             = random_v4uuid;
+    my $root_user            = random_v4uuid;
+    my $root_user_api_secret = random_v4uuid;
 
     # Insert root org/user without calling the Model packages - those require
     # an initialized State instance, which isn't ready yet.
@@ -72,12 +71,12 @@ sub init () {
     );
 
     return GrokLOC::State->new(
-        master         => $master,
-        replicas       => [$master],
-        kdf_iterations => $kdf_iterations,
-        key            => $key,
-        root_org       => $root_org,
-        root_user      => $root_user,
+        master               => $master,
+        replicas             => [$master],
+        kdf_iterations       => $kdf_iterations,
+        key                  => $key,
+        root_org             => $root_org,
+        root_user            => $root_user,
         root_user_api_secret => $root_user_api_secret,
     );
 }
