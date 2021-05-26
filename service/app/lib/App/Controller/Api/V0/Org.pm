@@ -3,6 +3,7 @@ use strictures 2;
 use Mojo::Base 'Mojolicious::Controller';
 use experimental qw(signatures try);
 use GrokLOC::App qw(:all);
+use GrokLOC::App::Message qw(app_msg);
 use GrokLOC::App::Routes qw(:routes);
 use GrokLOC::Models qw(:all);
 use GrokLOC::Models::Org;
@@ -61,7 +62,7 @@ sub create ( $c ) {
         return;
     }
 
-    $c->res->headers->header( 'Location' => "$ORG_ROUTE/$org->id" );
+    $c->res->headers->header( 'Location' => "$ORG_ROUTE/" . $org->id );
     $c->render( app_msg( 201, { status => 'created' } ) );
     return 1;
 }

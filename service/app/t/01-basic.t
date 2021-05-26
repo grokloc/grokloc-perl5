@@ -59,25 +59,29 @@ ok(
             url        => $url,
             ua         => $t->ua,
         );
-    }
+    },
+    'root client'
 ) or note($@);
 
 ok(
     lives {
         $client->token_request;
-    }
+    },
+    'token request'
 ) or note($@);
 
 ok(
     lives {
         $client->ok;
-    }
+    },
+    'ok'
 ) or note($@);
 
 ok(
     lives {
         $client->status;
-    }
+    },
+    'status'
 ) or note($@);
 
 done_testing();

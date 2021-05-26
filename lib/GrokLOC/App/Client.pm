@@ -100,9 +100,17 @@ class GrokLOC::App::Client {
     }
 
     # ----- Org related.
-    # method org_create {
-
-    # }
+    method org_create ($name) {
+        croak 'malformed name' unless safe_str($name);
+        my $headers = $self->token_request;
+        my $route   = $url . $ORG_ROUTE;
+        my $result =
+          $ua->post( $route => $headers => json => { name => $name } )->result;
+        if ( 201 != $result->code ) {
+            croak 'status code ' . $result->code;
+        }
+        return $result->headers->location;
+    }
 }
 
 1;
