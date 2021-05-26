@@ -11,10 +11,10 @@ use GrokLOC::State::Unit;
 our $VERSION   = '0.01';
 our $AUTHORITY = 'cpan:bclawsie';
 
+use base qw(Exporter);
+
 # Make the state instance available as a pkg var - this aids testing.
 our $ST;
-
-use base qw(Exporter);
 
 sub state_init ($level) {
     croak 'no valid level' unless ( any { $_ eq $level } @LEVELS );
