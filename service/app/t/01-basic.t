@@ -10,11 +10,7 @@ use GrokLOC::App qw(:all);
 use GrokLOC::App::Client;
 use GrokLOC::App::JWT qw(:all);
 use GrokLOC::App::Routes qw(:routes);
-use GrokLOC::Env qw(:all);
 use GrokLOC::Models qw(:all);
-use GrokLOC::Models::Org;
-use GrokLOC::Models::User;
-use GrokLOC::Security::Crypt qw(:all);
 use GrokLOC::State::Init qw(:all);
 
 my $t   = Test::Mojo->new('App');
@@ -34,24 +30,19 @@ $t->post_ok(
     }
 )->status_is(404);
 
-my $root_user = $ST->root_user;
-
 # Bad token.
 $t->post_ok(
     $TOKEN_REQUEST_ROUTE => {
-        $X_GROKLOC_ID            => $root_user,
+        $X_GROKLOC_ID            => $ST->root_user,
         $X_GROKLOC_TOKEN_REQUEST => random_v4uuid,
     }
 )->status_is(401);
 
-# Unencrypted from env.
-my $root_user_api_secret = $ST->root_user_api_secret;
-
-my $token_request = encode_token_request( $root_user, $root_user_api_secret );
+my $token_request = encode_token_request( $ST->root_user, $ST->root_user_api_secret );
 
 $t->post_ok(
     $TOKEN_REQUEST_ROUTE => {
-        $X_GROKLOC_ID            => $root_user,
+        $X_GROKLOC_ID            => $ST->root_user,
         $X_GROKLOC_TOKEN_REQUEST => $token_request,
     }
 )->status_is(204);
@@ -63,8 +54,8 @@ my $client;
 ok(
     lives {
         $client = GrokLOC::App::Client->new(
-            id         => $root_user,
-            api_secret => $root_user_api_secret,
+            id         => $ST->root_user,
+            api_secret => $ST->root_user_api_secret,
             url        => $url,
             ua         => $t->ua,
         );
