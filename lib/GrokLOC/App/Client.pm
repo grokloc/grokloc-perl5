@@ -98,6 +98,11 @@ class GrokLOC::App::Client {
         }
         return $result->json;
     }
+
+    # ----- Org related.
+    # method org_create {
+        
+    # }
 }
 
 1;

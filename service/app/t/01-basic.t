@@ -10,8 +10,7 @@ use GrokLOC::App qw(:all);
 use GrokLOC::App::Client;
 use GrokLOC::App::JWT qw(:all);
 use GrokLOC::App::Routes qw(:routes);
-use GrokLOC::Models qw(:all);
-use GrokLOC::State::Init qw(:all);
+use GrokLOC::State::Init qw($ST);
 
 my $t   = Test::Mojo->new('App');
 my $url = Mojo::URL->new( $t->ua->server->url->to_string );
