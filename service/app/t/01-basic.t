@@ -37,7 +37,8 @@ $t->post_ok(
     }
 )->status_is(401);
 
-my $token_request = encode_token_request( $ST->root_user, $ST->root_user_api_secret );
+my $token_request =
+  encode_token_request( $ST->root_user, $ST->root_user_api_secret );
 
 $t->post_ok(
     $TOKEN_REQUEST_ROUTE => {

@@ -101,7 +101,7 @@ class GrokLOC::App::Client {
 
     # ----- Org related.
     # method org_create {
-        
+
     # }
 }
 

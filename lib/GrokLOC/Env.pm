@@ -20,12 +20,9 @@ Readonly::Scalar our $PROD  => 'PROD';
 
 Readonly::Array our @LEVELS => ( $UNIT, $DEV, $STAGE, $PROD );
 
-our @EXPORT_OK =
-  qw($GROKLOC_ENV $UNIT $DEV $STAGE $PROD @LEVELS);
+our @EXPORT_OK = qw($GROKLOC_ENV $UNIT $DEV $STAGE $PROD @LEVELS);
 our %EXPORT_TAGS =
-  ( all =>
-      [qw($GROKLOC_ENV $UNIT $DEV $STAGE $PROD @LEVELS)]
-  );
+  ( all => [qw($GROKLOC_ENV $UNIT $DEV $STAGE $PROD @LEVELS)] );
 
 1;
 
