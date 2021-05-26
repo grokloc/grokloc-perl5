@@ -32,16 +32,18 @@ ok(
 ) or note($@);
 
 # Only root can create a new org.
-my $org_location;
-
+my $org_result;
+my $org_name = random_v4uuid;
 ok(
     lives {
-        $org_location = $root_client->org_create(random_v4uuid);
+        $org_result = $root_client->org_create($org_name);
     },
     'org create'
 ) or note($@);
 
-like( $org_location, qr/\/\S+\/\S+\/\S+\/\S+/, 'location path' );
+is( $org_result->code, 201, 'org create code' );
+like( $org_result->headers->location,
+    qr/\/\S+\/\S+\/\S+\/\S+/, 'location path' );
 
 # Create a regular non-root user (and client) - won't be able to create an org.
 my ( $a_org, $a_user, $a_client );
@@ -60,10 +62,22 @@ ok(
 ) or note($@);
 
 ok(
-    dies {
-        $a_client->org_create(random_v4uuid);
+    lives {
+        $org_result = $a_client->org_create(random_v4uuid);
     },
     'a_client org create'
 ) or note($@);
+
+is( $org_result->code, 403, 'org create code' );
+
+# Duplicates not allowed.
+ok(
+    lives {
+        $org_result = $root_client->org_create($org_name);
+    },
+    'org create'
+) or note($@);
+
+is( $org_result->code, 409, 'org create code' );
 
 done_testing();
