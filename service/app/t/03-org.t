@@ -33,7 +33,7 @@ ok(
     'root client'
 ) or note($@);
 
-# Only root can create a new org.
+# only root can create a new org
 my $create_org_result;
 my $org_name = random_v4uuid;
 ok(
@@ -54,7 +54,7 @@ else {
     croak 'cannot extract id from ' . $create_org_result->headers->location;
 }
 
-# Create a regular non-root user (and client) - won't be able to create an org.
+# create a regular non-root user (and client) - won't be able to create an org
 my ( $a_org, $a_user, $a_client );
 ok(
     lives {
@@ -79,7 +79,7 @@ ok(
 
 is( $create_org_result->code, 403, 'org create code' );
 
-# Duplicates not allowed.
+# duplicates not allowed
 ok(
     lives {
         $create_org_result = $root_client->org_create($org_name);
@@ -89,8 +89,7 @@ ok(
 
 is( $create_org_result->code, 409, 'org create code' );
 
-# Root can read any org.
-
+# root can read any org
 my $read_org_result;
 ok(
     lives {
@@ -111,5 +110,26 @@ ok(
 ) or note($@);
 
 is( $round_trip_org->id, $org_id, 'round trip org' );
+
+# regular user read their own org
+ok(
+    lives {
+        $read_org_result = $a_client->org_read( $a_org->id );
+    },
+    'org read'
+) or note($@);
+
+is( $read_org_result->code, 200, 'org read code' );
+
+# regular user cannot read an org that they don't belong to
+# $org_id here is a new org created above
+ok(
+    lives {
+        $read_org_result = $a_client->org_read($org_id);
+    },
+    'org read'
+) or note($@);
+
+is( $read_org_result->code, 403, 'org read code' );
 
 done_testing();
