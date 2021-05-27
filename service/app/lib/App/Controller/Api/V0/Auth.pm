@@ -42,6 +42,7 @@ sub with_session ( $c ) {
         $c->render( app_msg( 404, { error => 'user not found' } ) );
         return;
     }
+
     my $org;
     try {
         $org =
@@ -99,31 +100,30 @@ sub with_session ( $c ) {
 sub new_token_ ( $c ) {
     my $token_request = $c->req->headers->header($X_GROKLOC_TOKEN_REQUEST);
     unless ( defined $token_request ) {
-        $c->render(
+        return $c->render(
             app_msg( 400, { error => 'missing:' . $X_GROKLOC_TOKEN_REQUEST } )
         );
-        return;
     }
+
     my $user = $c->stash($STASH_USER);
     unless (
         verify_token_request( $token_request, $user->id, $user->api_secret ) )
     {
-        $c->render( app_msg( 401, { error => 'bad token request' } ) );
-        return;
+        return $c->render( app_msg( 401, { error => 'bad token request' } ) );
     }
+
     my $token;
     try {
         $token = encode_token( $user->id, $c->st->key );
     }
     catch ($e) {
         $c->app->log->error("cannot encode token for user:$user->id:$e");
-        $c->render( app_msg( 500, { error => 'internal error' } ) );
-        return;
+        return $c->render( app_msg( 500, { error => 'internal error' } ) );
     }
+
     $c->res->headers->header( $AUTHORIZATION => $JWT_TYPE . q{ } . $token );
-    $c->render( status => 204, data => q{} );
     $c->app->log->info( 'new token for user ' . $user->id );
-    return 1;
+    return $c->rendered(204);
 }
 
 1;

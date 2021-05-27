@@ -111,7 +111,7 @@ class GrokLOC::App::Client {
     method org_read ($id) {
         croak 'malformed id' unless safe_str($id);
         my $headers = $self->token_request;
-        my $route   = $url . $ORG_ROUTE . qw{/} . $id;
+        my $route   = $url . $ORG_ROUTE . q{/} . $id;
         return $ua->get( $route => $headers )->result;
     }
 }

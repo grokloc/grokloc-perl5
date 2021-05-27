@@ -10,8 +10,7 @@ our $VERSION   = '0.01';
 our $AUTHORITY = 'cpan:bclawsie';
 
 sub ok_ ( $c ) {
-    $c->render( app_msg( 200, { ping => 'ok' } ) );
-    return 1;
+    return $c->render( app_msg( 200, { ping => 'ok' } ) );
 }
 
 1;

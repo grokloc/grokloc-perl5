@@ -12,17 +12,11 @@ our $AUTHORITY = 'cpan:bclawsie';
 
 # status should be authenticated for root only
 sub status_ ( $c ) {
-    unless ( defined $c->stash($STASH_AUTH) ) {
-        $c->app->log->error( 'missing stash key ' . $STASH_AUTH );
-        $c->render( app_msg( 500, { error => 'internal error' } ) );
-        return;
-    }
     if ( $c->stash($STASH_AUTH) != $TOKEN_ROOT ) {
-        $c->render( app_msg( 403, { error => 'inadequate authorization' } ) );
-        return;
+        return $c->render(
+            app_msg( 403, { error => 'inadequate authorization' } ) );
     }
-    $c->render( app_msg( 200, { started_at => $c->started_at } ) );
-    return 1;
+    return $c->render( app_msg( 200, { started_at => $c->started_at } ) );
 }
 
 1;

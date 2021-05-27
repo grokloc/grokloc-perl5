@@ -111,6 +111,16 @@ ok(
 
 is( $round_trip_org->id, $org_id, 'round trip org' );
 
+# root gets a 404 on an org that isn't there
+ok(
+    lives {
+        $read_org_result = $root_client->org_read(random_v4uuid);
+    },
+    'org read'
+) or note($@);
+
+is( $read_org_result->code, 404, 'org not found' );
+
 # regular user read their own org
 ok(
     lives {
