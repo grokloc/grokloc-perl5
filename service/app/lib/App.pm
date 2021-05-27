@@ -65,6 +65,9 @@ sub routes_init ($self) {
     # read an org
     $with_session->get($org_id)->to('api-v0-org#read_');
 
+    # update an org
+    $with_session->put($org_id)->to('api-v0-org#update_');
+
     $r->any(
         '/*whatever' => { whatever => q{} } => sub ($c) {
             my $whatever = $c->param('whatever');

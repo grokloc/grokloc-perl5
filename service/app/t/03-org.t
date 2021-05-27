@@ -142,4 +142,74 @@ ok(
 
 is( $read_org_result->code, 403, 'org read code' );
 
+# update org status
+# needs to be set to active to change the owner, so this must be done first anyway
+
+# first, read it to make sure it isn't active
+my $update_confirm_org_result;
+ok(
+    lives {
+        $update_confirm_org_result = $root_client->org_read($org_id);
+    },
+    'org read'
+) or note($@);
+
+isnt( $update_confirm_org_result->json->{meta}->{status},
+    $STATUS_ACTIVE, 'org not active' );
+
+# now, update it to active
+my $update_org_result;
+ok(
+    lives {
+        $update_org_result =
+          $root_client->org_update( $org_id, { status => $STATUS_ACTIVE } );
+    },
+    'org update'
+) or note($@);
+
+is( $update_org_result->code, 204, 'org update' );
+
+# re-read the org to be sure
+ok(
+    lives {
+        $update_confirm_org_result = $root_client->org_read($org_id);
+    },
+    'org read'
+) or note($@);
+
+is( $update_confirm_org_result->json->{meta}->{status},
+    $STATUS_ACTIVE, 'org active' );
+
+# update org - missing org
+
+# update owner
+
+# regular user cannot update an org in any way
+
+# update with no args
+
+# update with multiple args
+
+# # update org owner - first we need a new, active user in the org
+# my $new_owner = GrokLOC::Models::User->new(
+#         display_name => random_v4uuid,
+#         email        => random_v4uuid,
+#         org          => $org_id,
+#         password => kdf( random_v4uuid, salt(random_v4uuid), $ST->kdf_iterations ),
+#         key      => $ST->key,
+#     );
+
+# ok(
+#     lives {
+#         # Insert the user.
+#         my $insert_result = $new_owner->insert($ST->master);
+#         croak 'user insert fail' unless $insert_result == $RESPONSE_OK;
+
+#         # Update as active.
+#         my $update_result = $new_owner->update_status( $ST->master, $STATUS_ACTIVE );
+#         warn 'user update fail' unless $update_result == $RESPONSE_OK;
+#         croak 'user update fail' unless $update_result == $RESPONSE_OK;
+#     }, 'make new org owner'
+# ) or note($@);
+
 done_testing();
