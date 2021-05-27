@@ -43,7 +43,7 @@ sub routes_init ($self) {
     my $r = $self->routes;
 
     # route endpoints have a suffix of _, middlewares do not
-    
+
     # GET /ok -> ok, no auth.
     $r->get($OK_ROUTE)->to('api-v0-ok#ok_');
 
