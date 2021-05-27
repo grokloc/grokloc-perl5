@@ -101,10 +101,11 @@ class GrokLOC::Models::Org extends GrokLOC::Models::Base {
 
     method TO_JSON {
         return {
-            name  => $self->name,
-            owner => $self->owner,
-            id    => $self->id,
-            meta  => $self->meta,
+            name           => $self->name,
+            owner          => $self->owner,
+            id             => $self->id,
+            meta           => $self->meta,
+            schema_version => $self->schema_version,
         };
     }
 }

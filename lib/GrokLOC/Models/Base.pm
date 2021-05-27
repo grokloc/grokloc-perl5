@@ -27,10 +27,11 @@ class GrokLOC::Models::Base {
             croak 'id invalid' unless safe_str( $args{id} );
             $id = $args{id};
         }
+
         if ( exists $args{meta} ) {
 
-            # If passed through a json encode/decode cycle, the meta object
-            # will be a hash ref, so convert it.
+            # if passed through a json encode/decode cycle, the meta object
+            # will be a hash ref, so convert it
             if ( ref( $args{meta} ) eq 'HASH' ) {
                 $meta = GrokLOC::Models::Meta->new( %{ $args{meta} } );
             }
@@ -41,9 +42,12 @@ class GrokLOC::Models::Base {
                 $meta = $args{meta};
             }
         }
+
         if ( exists $args{schema_version} ) {
             $schema_version = $args{schema_version};
         }
+
+        return;
     }
 
     method _update_status ( $master, $tablename, $id, $status ) {

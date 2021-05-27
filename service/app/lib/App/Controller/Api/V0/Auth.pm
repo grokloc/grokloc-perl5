@@ -15,10 +15,10 @@ use GrokLOC::Security::Crypt qw(:all);
 our $VERSION   = '0.01';
 our $AUTHORITY = 'cpan:bclawsie';
 
-# with_session is a middleware that will fill the stash with user and org instances.
-# Subsequent chained handlers can be assured of a stashed user and org.
-# Subsequent chained handlers can be assured of a minumum auth level of $AUTH_USER.
-# See perldocs for more info.
+# with_session is a middleware that will fill the stash with user and org instances
+# subsequent chained handlers can be assured of a stashed user and org
+# subsequent chained handlers can be assured of a minumum auth level of $AUTH_USER
+# see perldocs for more info
 sub with_session ( $c ) {
     $c->stash( $STASH_AUTH => $AUTH_NONE );
 
@@ -92,10 +92,11 @@ sub with_session ( $c ) {
 }
 
 # new_token mints a new jwt for a user if the token request header
-# validates. Should be treated as a POST handler since a new jwt is always
+# validates
+# should be treated as a POST handler since a new jwt is always
 # minted, but note that unlike typical POSTs, there is no redirect or Location
-# header in the response, only the value of the jwt.
-sub new_token ( $c ) {
+# header in the response, only the value of the jwt
+sub new_token_ ( $c ) {
     my $token_request = $c->req->headers->header($X_GROKLOC_TOKEN_REQUEST);
     unless ( defined $token_request ) {
         $c->render(

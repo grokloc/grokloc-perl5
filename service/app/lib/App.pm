@@ -19,8 +19,23 @@ sub startup ($self) {
     $self->helper( st => sub ($self) { return $st; } );
     my $started_at = time;
     $self->helper( started_at => sub ($self) { return $started_at; } );
+    $self->hooks_init;
     $self->routes_init;
     $self->log->info('app startup');
+    return;
+}
+
+sub hooks_init ($self) {
+    $self->hook(
+        before_render => sub ( $c, $args ) {
+            return unless my $template = $args->{template};
+            return unless $template eq 'exception';
+            return unless $c->accepts('json');
+            $self->log->error( $c->stash('exception') );
+            my %h = app_msg( 500, { error => 'internal error' } );
+            $args->{json} = $h{json};
+        }
+    );
     return;
 }
 
@@ -28,20 +43,25 @@ sub routes_init ($self) {
     my $r = $self->routes;
 
     # GET /ok -> ok, no auth.
-    $r->get($OK_ROUTE)->to('api-v0-ok#ok');
+    $r->get($OK_ROUTE)->to('api-v0-ok#ok_');
 
     # Everything under /api/v0 requires a user/org/auth session in the stash.
     # Child routes of $with_session should not include the /api/v0 part.
     my $with_session = $r->under($API_ROUTE)->to('api-v0-auth#with_session');
 
     # Request a new token.
-    $with_session->post($TOKEN_REQUEST)->to('api-v0-auth#new_token');
+    $with_session->post($TOKEN_REQUEST)->to('api-v0-auth#new_token_');
 
     # Root-authenticated status.
-    $with_session->get($STATUS)->to('api-v0-status#status');
+    $with_session->get($STATUS)->to('api-v0-status#status_');
 
     # Create a new org.
-    $with_session->post($ORG)->to('api-v0-org#create');
+    $with_session->post($ORG)->to('api-v0-org#create_');
+
+    my $org_id = $ORG . '/:id';
+
+    # Read an org.
+    $with_session->get($org_id)->to('api-v0-org#read_');
 
     $r->any(
         '/*whatever' => { whatever => q{} } => sub ($c) {

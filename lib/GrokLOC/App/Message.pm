@@ -12,8 +12,7 @@ use base qw(Exporter);
 
 # app_msg formats a return tuple suitable for Mojo.
 sub app_msg ( $http_code, $content_hashref ) {
-    my $v = { status => $http_code, time => time, content => $content_hashref };
-    return ( format => 'json', json => $v, status => $http_code );
+    return ( format => 'json', json => $content_hashref, status => $http_code );
 }
 
 our @EXPORT_OK   = qw(app_msg);

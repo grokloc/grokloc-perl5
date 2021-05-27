@@ -36,7 +36,7 @@ class GrokLOC::App::Client {
         ( $url, $id, $api_secret, $ua ) =
           ( $args{url}, $args{id}, $args{api_secret}, $args{ua} );
 
-        # Remove trailing / if any.
+        # remove trailing / if any
         chop $url if ( $url =~ m{/$}msx );
     }
 
@@ -70,7 +70,7 @@ class GrokLOC::App::Client {
         }
         $_token = $result->headers->authorization;
 
-        # Subtract a one minute to be safe.
+        # subtract a one minute to be safe
         $_token_time = $now + $JWT_EXPIRATION - 60;
         return {
             $X_GROKLOC_ID  => $id,
@@ -78,7 +78,7 @@ class GrokLOC::App::Client {
         };
     }
 
-    # ok is an unauthenticated ping.
+    # ok is an unauthenticated ping
     method ok {
         my $route  = $url . $OK_ROUTE;
         my $result = $ua->get($route)->result;
@@ -88,7 +88,7 @@ class GrokLOC::App::Client {
         return $result->json;
     }
 
-    # status wrapped from app_msg and returned as a hashref. Requires root auth.
+    # status wrapped from app_msg and returned as a hashref
     method status {
         my $headers = $self->token_request;
         my $route   = $url . $STATUS_ROUTE;
@@ -99,13 +99,20 @@ class GrokLOC::App::Client {
         return $result->json;
     }
 
-    # ----- Org related.
+    # ----- org related
     method org_create ($name) {
         croak 'malformed name' unless safe_str($name);
         my $headers = $self->token_request;
         my $route   = $url . $ORG_ROUTE;
         return $ua->post( $route => $headers => json => { name => $name } )
           ->result;
+    }
+
+    method org_read ($id) {
+        croak 'malformed id' unless safe_str($id);
+        my $headers = $self->token_request;
+        my $route   = $url . $ORG_ROUTE . qw{/} . $id;
+        return $ua->get( $route => $headers )->result;
     }
 }
 

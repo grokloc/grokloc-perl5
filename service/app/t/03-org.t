@@ -10,6 +10,8 @@ use experimental qw(signatures try);
 use GrokLOC::App qw(:all);
 use GrokLOC::App::Client;
 use GrokLOC::App::Routes qw(:routes);
+use GrokLOC::Models qw(:all);
+use GrokLOC::Models::Org;
 use GrokLOC::Security::Crypt qw(:all);
 use GrokLOC::State::Init qw($ST);
 use GrokLOC::Test;
@@ -32,18 +34,25 @@ ok(
 ) or note($@);
 
 # Only root can create a new org.
-my $org_result;
+my $create_org_result;
 my $org_name = random_v4uuid;
 ok(
     lives {
-        $org_result = $root_client->org_create($org_name);
+        $create_org_result = $root_client->org_create($org_name);
     },
     'org create'
 ) or note($@);
 
-is( $org_result->code, 201, 'org create code' );
-like( $org_result->headers->location,
+is( $create_org_result->code, 201, 'org create code' );
+like( $create_org_result->headers->location,
     qr/\/\S+\/\S+\/\S+\/\S+/, 'location path' );
+my $org_id;
+if ( $create_org_result->headers->location =~ /\/\S+\/\S+\/\S+\/(\S+)/ ) {
+    $org_id = $1;
+}
+else {
+    croak 'cannot extract id from ' . $create_org_result->headers->location;
+}
 
 # Create a regular non-root user (and client) - won't be able to create an org.
 my ( $a_org, $a_user, $a_client );
@@ -63,21 +72,44 @@ ok(
 
 ok(
     lives {
-        $org_result = $a_client->org_create(random_v4uuid);
+        $create_org_result = $a_client->org_create(random_v4uuid);
     },
     'a_client org create'
 ) or note($@);
 
-is( $org_result->code, 403, 'org create code' );
+is( $create_org_result->code, 403, 'org create code' );
 
 # Duplicates not allowed.
 ok(
     lives {
-        $org_result = $root_client->org_create($org_name);
+        $create_org_result = $root_client->org_create($org_name);
     },
     'org create'
 ) or note($@);
 
-is( $org_result->code, 409, 'org create code' );
+is( $create_org_result->code, 409, 'org create code' );
+
+# Root can read any org.
+
+my $read_org_result;
+ok(
+    lives {
+        $read_org_result = $root_client->org_read($org_id);
+    },
+    'org read'
+) or note($@);
+
+is( $read_org_result->code, 200, 'org read code' );
+
+my $round_trip_org;
+ok(
+    lives {
+        $round_trip_org =
+          GrokLOC::Models::Org->new( %{ $read_org_result->json } );
+    },
+    'round trip org'
+) or note($@);
+
+is( $round_trip_org->id, $org_id, 'round trip org' );
 
 done_testing();

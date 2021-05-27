@@ -10,8 +10,8 @@ use GrokLOC::App::Message qw(app_msg);
 our $VERSION   = '0.01';
 our $AUTHORITY = 'cpan:bclawsie';
 
-# status should be authenticated for root only.
-sub status ( $c ) {
+# status should be authenticated for root only
+sub status_ ( $c ) {
     unless ( defined $c->stash($STASH_AUTH) ) {
         $c->app->log->error( 'missing stash key ' . $STASH_AUTH );
         $c->render( app_msg( 500, { error => 'internal error' } ) );
