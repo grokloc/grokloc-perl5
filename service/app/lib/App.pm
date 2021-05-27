@@ -42,25 +42,27 @@ sub hooks_init ($self) {
 sub routes_init ($self) {
     my $r = $self->routes;
 
+    # route endpoints have a suffix of _, middlewares do not
+    
     # GET /ok -> ok, no auth.
     $r->get($OK_ROUTE)->to('api-v0-ok#ok_');
 
-    # Everything under /api/v0 requires a user/org/auth session in the stash.
-    # Child routes of $with_session should not include the /api/v0 part.
+    # everything under /api/v0 requires a user/org/auth session in the stash
+    # child routes of $with_session should not include the /api/v0 part
     my $with_session = $r->under($API_ROUTE)->to('api-v0-auth#with_session');
 
-    # Request a new token.
+    # request a new token
     $with_session->post($TOKEN_REQUEST)->to('api-v0-auth#new_token_');
 
-    # Root-authenticated status.
+    # root-authenticated status
     $with_session->get($STATUS)->to('api-v0-status#status_');
 
-    # Create a new org.
+    # create a new org
     $with_session->post($ORG)->to('api-v0-org#create_');
 
     my $org_id = $ORG . '/:id';
 
-    # Read an org.
+    # read an org
     $with_session->get($org_id)->to('api-v0-org#read_');
 
     $r->any(
