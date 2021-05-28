@@ -38,11 +38,10 @@ sub org_user ( $master, $key, $kdf_iterations ) {
         email        => random_v4uuid,
         org          => $org->id,
         password => kdf( random_v4uuid, salt(random_v4uuid), $kdf_iterations ),
-        key      => $key,
     );
     try {
         # Insert the user.
-        my $insert_result = $user->insert($master);
+        my $insert_result = $user->insert( $master, $key );
         croak 'user insert fail' unless $insert_result == $RESPONSE_OK;
 
         # Update as active.

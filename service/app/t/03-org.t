@@ -164,10 +164,10 @@ ok(
         $update_org_result =
           $root_client->org_update( $org_id, { status => $STATUS_ACTIVE } );
     },
-    'org update'
+    'org update status'
 ) or note($@);
 
-is( $update_org_result->code, 204, 'org update' );
+is( $update_org_result->code, 204, 'org update status' );
 
 # re-read the org to be sure
 ok(
@@ -181,35 +181,79 @@ is( $update_confirm_org_result->json->{meta}->{status},
     $STATUS_ACTIVE, 'org active' );
 
 # update org - missing org
+ok(
+    lives {
+        $update_org_result =
+          $root_client->org_update( random_v4uuid,
+            { status => $STATUS_ACTIVE } );
+    },
+    'org update - not found'
+) or note($@);
 
-# update owner
+is( $update_org_result->code, 404, 'org update - not found' );
+
+# update org - bad status
+ok(
+    lives {
+        $update_org_result = $update_org_result =
+          $root_client->org_update( $org_id, { status => random_v4uuid } );
+    },
+    'org update - bad status'
+) or note($@);
+
+is( $update_org_result->code, 500, 'org update - bad status' );
+
+# update org owner - first we need a new, active user in the org
+my $new_owner = GrokLOC::Models::User->new(
+    display_name => random_v4uuid,
+    email        => random_v4uuid,
+    org          => $org_id,
+    password => kdf( random_v4uuid, salt(random_v4uuid), $ST->kdf_iterations ),
+);
+
+ok(
+    lives {
+        # Insert the user.
+        my $insert_result = $new_owner->insert( $ST->master, $ST->key );
+        croak 'user insert fail' unless $insert_result == $RESPONSE_OK;
+
+        # Update as active.
+        my $update_result =
+          $new_owner->update_status( $ST->master, $STATUS_ACTIVE );
+        warn 'user update fail'  unless $update_result == $RESPONSE_OK;
+        croak 'user update fail' unless $update_result == $RESPONSE_OK;
+    },
+    'make new org owner'
+) or note($@);
+
+ok(
+    lives {
+        $update_org_result = $update_org_result =
+          $root_client->org_update( $org_id, { owner => $new_owner->id } );
+    },
+    'org update owner'
+) or note($@);
+
+is( $update_org_result->code, 204, 'org update owner' );
+
+# Re-read to make sure the owner is $new_owner
 
 # regular user cannot update an org in any way
+my $new_owner_client;
+ok(
+    lives {
+        $new_owner_client = GrokLOC::App::Client->new(
+            id         => $new_owner->id,
+            api_secret => $new_owner->api_secret,
+            url        => $url,
+            ua         => $t->ua,
+        );
+    },
+    'new_owner_client'
+) or note($@);
 
 # update with no args
 
 # update with multiple args
-
-# # update org owner - first we need a new, active user in the org
-# my $new_owner = GrokLOC::Models::User->new(
-#         display_name => random_v4uuid,
-#         email        => random_v4uuid,
-#         org          => $org_id,
-#         password => kdf( random_v4uuid, salt(random_v4uuid), $ST->kdf_iterations ),
-#         key      => $ST->key,
-#     );
-
-# ok(
-#     lives {
-#         # Insert the user.
-#         my $insert_result = $new_owner->insert($ST->master);
-#         croak 'user insert fail' unless $insert_result == $RESPONSE_OK;
-
-#         # Update as active.
-#         my $update_result = $new_owner->update_status( $ST->master, $STATUS_ACTIVE );
-#         warn 'user update fail' unless $update_result == $RESPONSE_OK;
-#         croak 'user update fail' unless $update_result == $RESPONSE_OK;
-#     }, 'make new org owner'
-# ) or note($@);
 
 done_testing();

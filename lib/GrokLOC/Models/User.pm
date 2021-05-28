@@ -35,7 +35,7 @@ class GrokLOC::Models::User extends GrokLOC::Models::Base {
     # Constructor has two forms:
     # 1. New user. In this case, there must be exactly five
     #    fields in the args hash:
-    #    (display, email, org, password, key).
+    #    (display, email, org, password).
     #    The last two fields are used to perform encryption on
     #    cleartext fields.
     # 2. Existing user. In this case, the (key, kdf_iterations)
@@ -46,29 +46,21 @@ class GrokLOC::Models::User extends GrokLOC::Models::Base {
     #     display_digest, email, email_digest, org, password).
     # NOTE: passwords are always assumed to be derived already.
     BUILD(%args) {
-        if ( 5 == scalar keys %args ) {
+        if ( 4 == scalar keys %args ) {
 
             # New user.
-            for my $k (qw(display_name email org password key)) {
+            for my $k (qw(display_name email org password)) {
                 croak "missing/malformed $k"
                   unless ( exists $args{$k} && safe_str( $args{$k} ) );
             }
+            $api_secret          = random_v4uuid;
+            $api_secret_digest   = sha256_b64($api_secret);
+            $display_name        = $args{display_name};
             $display_name_digest = sha256_b64( $args{display_name} );
+            $email               = $args{email};
             $email_digest        = sha256_b64( $args{email} );
             $org                 = $args{org};
             $password            = $args{password};
-
-            # email_digest is formed from the unique email provided by the user,
-            # so it is a useful iv/salt for encryption of display/email.
-            $display_name =
-              encrypt( $args{display_name}, $args{key}, iv($email_digest) );
-            $email =
-              encrypt( $args{email}, $args{key}, iv($email_digest) );
-
-            my $_api_secret = random_v4uuid;
-            $api_secret =
-              encrypt( $_api_secret, $args{key}, iv($email_digest) );
-            $api_secret_digest = sha256_b64($_api_secret);
 
             # Parent constructor will provide id, meta.
             return;
@@ -104,7 +96,8 @@ class GrokLOC::Models::User extends GrokLOC::Models::Base {
     # catch ($e) {
     #     ...unknown error
     # }
-    method insert ( $master ) {
+    method insert ( $master, $key ) {
+        croak 'missing/malformed key' unless ( safe_str($key) );
         croak 'db ref'
           unless safe_objs( [$master], [ 'Mojo::SQLite', 'Mojo::Pg' ] );
 
@@ -114,21 +107,28 @@ class GrokLOC::Models::User extends GrokLOC::Models::Base {
           ->hash;
         return $RESPONSE_ORG_ERR
           unless ( defined $v ) && ( $v->{status} == $STATUS_ACTIVE );
+
         try {
             $master->db->insert(
                 $TABLENAME,
                 {
-                    id                  => $self->id,
-                    api_secret          => $self->api_secret,
-                    api_secret_digest   => $self->api_secret_digest,
-                    display_name        => $self->display_name,
+                    id         => $self->id,
+                    api_secret => encrypt(
+                        $self->api_secret, $key, iv( $self->email_digest )
+                    ),
+                    api_secret_digest => $self->api_secret_digest,
+                    display_name      => encrypt(
+                        $self->display_name, $key,
+                        iv( $self->email_digest )
+                    ),
                     display_name_digest => $self->display_name_digest,
-                    email               => $self->email,
-                    email_digest        => $self->email_digest,
-                    org                 => $self->org,
-                    password            => $self->password,
-                    status              => $self->meta->status,
-                    schema_version      => $SCHEMA_VERSION,
+                    email               =>
+                      encrypt( $self->email, $key, iv( $self->email_digest ) ),
+                    email_digest   => $self->email_digest,
+                    org            => $self->org,
+                    password       => $self->password,
+                    status         => $self->meta->status,
+                    schema_version => $SCHEMA_VERSION,
                 }
             );
         }

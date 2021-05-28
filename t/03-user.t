@@ -43,21 +43,20 @@ ok(
             email        => $email,
             org          => $org->id,
             password     => $password,
-            key          => $st->key,
         );
     },
     'new'
 ) or note($@);
 
+is( $user->email,        $email,              'email' );
+is( $user->display_name, $display_name,       'display_name' );
 is( $user->password,     $password,           'password' );
 is( $user->meta->status, $STATUS_UNCONFIRMED, 'status' );
 is( $user->meta->ctime,  0,                   'ctime' );
 is( $user->meta->mtime,  0,                   'mtime' );
 
-isnt( $user->password,     $raw_password, 'password' );
-isnt( $user->display_name, $display_name, 'display_name' );
-isnt( $user->email,        $email,        'email' );
-isnt( $user->id,           q{},           'id' );
+isnt( $user->password, $raw_password, 'password' );
+isnt( $user->id,       q{},           'id' );
 
 ok(
     dies {
@@ -98,7 +97,7 @@ is( $rt->id, $user->id, 'id round trip' );
 
 ok(
     lives {
-        $result = $user->insert( $st->master );
+        $result = $user->insert( $st->master, $st->key );
     },
     'insert'
 ) or note($@);
@@ -107,7 +106,7 @@ is( $result, $RESPONSE_OK, 'insert ok' );
 
 ok(
     lives {
-        $result = $user->insert( $st->master );
+        $result = $user->insert( $st->master, $st->key );
     },
     'insert'
 ) or note($@);
@@ -122,9 +121,8 @@ ok(
             email        => $email,
             org          => random_v4uuid,
             password     => $password,
-            key          => $st->key,
         );
-        $result = $bad_org_user->insert( $st->master );
+        $result = $bad_org_user->insert( $st->master, $st->key );
     },
     'bad org user'
 ) or note($@);
@@ -142,7 +140,15 @@ ok(
     'read'
 ) or note($@);
 
-is( $read_user->id, $user->id, 'read ok' );
+is( $read_user->id,                  $user->id,                  'read ok' );
+is( $read_user->api_secret,          $user->api_secret,          'read ok' );
+is( $read_user->api_secret_digest,   $user->api_secret_digest,   'read ok' );
+is( $read_user->display_name,        $user->display_name,        'read ok' );
+is( $read_user->display_name_digest, $user->display_name_digest, 'read ok' );
+is( $read_user->email,               $user->email,               'read ok' );
+is( $read_user->email_digest,        $user->email_digest,        'read ok' );
+is( $read_user->password,            $user->password,            'read ok' );
+is( $read_user->org,                 $user->org,                 'read ok' );
 
 my $not_found;
 
