@@ -183,8 +183,7 @@ is( $update_confirm_org_result->json->{meta}->{status},
 # update org - missing org
 ok(
     lives {
-        $update_org_result =
-          $root_client->org_update( random_v4uuid,
+        $update_org_result = $root_client->org_update( random_v4uuid,
             { status => $STATUS_ACTIVE } );
     },
     'org update - not found'
@@ -195,7 +194,7 @@ is( $update_org_result->code, 404, 'org update - not found' );
 # update org - bad status
 ok(
     lives {
-        $update_org_result = $update_org_result =
+        $update_org_result =
           $root_client->org_update( $org_id, { status => random_v4uuid } );
     },
     'org update - bad status'
@@ -228,7 +227,7 @@ ok(
 
 ok(
     lives {
-        $update_org_result = $update_org_result =
+        $update_org_result =
           $root_client->org_update( $org_id, { owner => $new_owner->id } );
     },
     'org update owner'
@@ -238,7 +237,7 @@ is( $update_org_result->code, 204, 'org update owner' );
 
 # Re-read to make sure the owner is $new_owner
 
-# regular user cannot update an org in any way
+# regular user cannot update an org in any way, even as owner
 my $new_owner_client;
 ok(
     lives {
@@ -252,8 +251,41 @@ ok(
     'new_owner_client'
 ) or note($@);
 
+ok(
+    lives {
+        $update_org_result =
+          $new_owner_client->org_update( $org_id,
+            { status => $STATUS_ACTIVE } );
+    },
+    'regular user updating org'
+) or note($@);
+
+is( $update_org_result->code, 403, 'regular user updating org' );
+
 # update with no args
+ok(
+    lives {
+        $update_org_result = $root_client->org_update( $org_id, {} );
+    },
+    'no args'
+) or note($@);
+
+is( $update_org_result->code, 400, 'no args' );
 
 # update with multiple args
+ok(
+    lives {
+        $update_org_result = $root_client->org_update(
+            $org_id,
+            {
+                status => $STATUS_ACTIVE,
+                owner  => $new_owner->id,
+            }
+        );
+    },
+    'multiple args'
+) or note($@);
+
+is( $update_org_result->code, 400, 'multiple args' );
 
 done_testing();
