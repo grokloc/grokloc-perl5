@@ -32,23 +32,17 @@ class GrokLOC::Models::User extends GrokLOC::Models::Base {
     has $org :reader;
     has $password :reader;
 
-    # Constructor has two forms:
-    # 1. New user. In this case, there must be exactly five
-    #    fields in the args hash:
-    #    (display, email, org, password).
-    #    The last two fields are used to perform encryption on
-    #    cleartext fields.
-    # 2. Existing user. In this case, the (key, kdf_iterations)
-    #    args are not passed,
-    #    since all fields are assumed to be in their sealed states.
-    #    The args passed must be
-    #    (id, api_secret, api_secret_digest, display,
-    #     display_digest, email, email_digest, org, password).
-    # NOTE: passwords are always assumed to be derived already.
+    # constructor has two forms:
+    # 1. new user
+    #    exactly foud fields in the args hash:
+    #    (display, email, org, password)
+    #    password is always passed as already dervied
+    # 2. existing user
+    #    all fields required except for meta, which is optional
     BUILD(%args) {
         if ( 4 == scalar keys %args ) {
 
-            # New user.
+            # new user
             for my $k (qw(display_name email org password)) {
                 croak "missing/malformed $k"
                   unless ( exists $args{$k} && safe_str( $args{$k} ) );
@@ -62,11 +56,11 @@ class GrokLOC::Models::User extends GrokLOC::Models::Base {
             $org                 = $args{org};
             $password            = $args{password};
 
-            # Parent constructor will provide id, meta.
+            # parent constructor will provide id, meta
             return;
         }
 
-        # Otherwise, this is an existing user.
+        # existing user
         for my $k (
             qw(id api_secret api_secret_digest display_name
             display_name_digest email email_digest org password)
@@ -84,7 +78,7 @@ class GrokLOC::Models::User extends GrokLOC::Models::Base {
         $org                 = $args{org};
         $password            = $args{password};
 
-        # Parent constructor validates id and optionally meta.
+        # parent constructor validates id and optionally meta
         return;
     }
 
@@ -101,7 +95,7 @@ class GrokLOC::Models::User extends GrokLOC::Models::Base {
         croak 'db ref'
           unless safe_objs( [$master], [ 'Mojo::SQLite', 'Mojo::Pg' ] );
 
-        # Verify that the org is in the db and active.
+        # verify that the org is in the db and active
         my $v =
           $master->db->select( $ORGS_TABLENAME, [qw{*}], { id => $self->org } )
           ->hash;
@@ -163,8 +157,6 @@ class GrokLOC::Models::User extends GrokLOC::Models::Base {
         return $self->_update_status( $master, $TABLENAME, $self->id, $status );
     }
 
-    # NOTE: TO_JSON serializes the entire object - you would not use this
-    # to return user information on the web.
     method TO_JSON {
         return {
             id                  => $self->id,
