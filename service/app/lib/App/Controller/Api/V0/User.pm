@@ -1,6 +1,5 @@
 package App::Controller::Api::V0::User;
 use strictures 2;
-use Crypt::Misc qw(random_v4uuid);
 use Mojo::Base 'Mojolicious::Controller';
 use experimental qw(signatures try);
 use GrokLOC::App qw(:all);
@@ -33,6 +32,11 @@ sub create_ ( $c ) {
         }
     }
 
+    # never add to the root org through the web api
+    if ( $user_args{org} eq $c->st->root_org ) {
+        return $c->render( app_msg( 403, { error => 'prohibited org arg' } ) );
+    }
+
     # if caller is an org owner, must be in same org as prospective new user
     if ( $c->stash($STASH_AUTH) == $TOKEN_ORG ) {
         my $calling_user = $c->stash($STASH_USER);
@@ -48,10 +52,7 @@ sub create_ ( $c ) {
             display_name => $user_args{display_name},
             email        => $user_args{email},
             org          => $user_args{org},
-            password     => kdf(
-                $user_args{password}, salt(random_v4uuid),
-                $c->st->kdf_iterations
-            ),
+            password     => $user_args{password},       # already derived
         );
     }
     catch ($e) {
@@ -61,7 +62,7 @@ sub create_ ( $c ) {
 
     my $result;
     try {
-        $result = $user->insert( $c->st->master );
+        $result = $user->insert( $c->st->master, $c->st->key );
     }
     catch ($e) {
         $c->app->log->error( 'internal error inserting user:' . $e );
@@ -74,6 +75,9 @@ sub create_ ( $c ) {
     }
     if ( $RESPONSE_CONFLICT == $result ) {
         return $c->render( app_msg( 409, { error => 'conflict' } ) );
+    }
+    if ( $RESPONSE_ORG_ERR == $result ) {
+        return $c->render( app_msg( 400, { error => 'org error' } ) );
     }
     $c->app->log->error('unknown internal error inserting org');
     return $c->render( app_msg( 500, { error => 'internal error' } ) );

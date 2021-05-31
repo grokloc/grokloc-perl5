@@ -122,6 +122,25 @@ class GrokLOC::App::Client {
         my $route   = $url . $ORG_ROUTE . q{/} . $id;
         return $ua->put( $route => $headers => json => $args )->result;
     }
+
+    # ----- user related
+
+    # password should aleady be derived by kdf
+    method user_create ( $display_name, $email, $org, $password ) {
+        for my $k ( $display_name, $email, $org, $password ) {
+            croak "missing/malformed $k" unless ( safe_str($k) );
+        }
+        my $headers = $self->token_request;
+        my $route   = $url . $USER_ROUTE;
+        return $ua->post(
+            $route => $headers => json => {
+                display_name => $display_name,
+                email        => $email,
+                org          => $org,
+                password     => $password,
+            }
+        )->result;
+    }
 }
 
 1;

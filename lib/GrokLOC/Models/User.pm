@@ -99,6 +99,7 @@ class GrokLOC::Models::User extends GrokLOC::Models::Base {
         my $v =
           $master->db->select( $ORGS_TABLENAME, [qw{*}], { id => $self->org } )
           ->hash;
+
         return $RESPONSE_ORG_ERR
           unless ( defined $v ) && ( $v->{status} == $STATUS_ACTIVE );
 

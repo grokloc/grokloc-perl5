@@ -210,19 +210,46 @@ my $new_owner = GrokLOC::Models::User->new(
     password => kdf( random_v4uuid, salt(random_v4uuid), $ST->kdf_iterations ),
 );
 
+# user has been created but is not yet in db
 ok(
     lives {
-        # Insert the user.
+        $update_org_result =
+          $root_client->org_update( $org_id, { owner => $new_owner->id } );
+    },
+    'org update owner - not in db'
+) or note($@);
+
+is( $update_org_result->code, 400, 'org update owner - not in db' );
+
+# insert the user, but leave as unconfirmed...update owner requires
+# the user to be active so will still fail
+ok(
+    lives {
         my $insert_result = $new_owner->insert( $ST->master, $ST->key );
         croak 'user insert fail' unless $insert_result == $RESPONSE_OK;
+    },
+    'insert new org owner'
+) or note($@);
 
-        # Update as active.
+ok(
+    lives {
+        $update_org_result =
+          $root_client->org_update( $org_id, { owner => $new_owner->id } );
+    },
+    'org update owner - not active'
+) or note($@);
+
+is( $update_org_result->code, 400, 'org update owner - not active' );
+
+# now make the user active so the update will work
+ok(
+    lives {
         my $update_result =
           $new_owner->update_status( $ST->master, $STATUS_ACTIVE );
         warn 'user update fail'  unless $update_result == $RESPONSE_OK;
         croak 'user update fail' unless $update_result == $RESPONSE_OK;
     },
-    'make new org owner'
+    'activate new org owner'
 ) or note($@);
 
 ok(

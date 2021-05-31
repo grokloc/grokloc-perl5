@@ -119,24 +119,27 @@ sub update_ ( $c ) {
             app_msg( 400, { error => 'only one org updated permitted' } ) );
     }
 
-    my $resp;
+    my $result;
     if ( exists $org_args{owner} ) {
-        $resp = $org->update_owner( $c->st->master, $org_args{owner} );
+        $result = $org->update_owner( $c->st->master, $org_args{owner} );
     }
     elsif ( exists $org_args{status} ) {
-        $resp = $org->update_status( $c->st->master, $org_args{status} );
+        $result = $org->update_status( $c->st->master, $org_args{status} );
     }
     else {
         return $c->render(
             app_msg( 400, { error => 'unsupported update attribute' } ) );
     }
-    if ( $RESPONSE_OK == $resp ) {
+    if ( $RESPONSE_OK == $result ) {
         return $c->rendered(204);
+    }
+    if ( $RESPONSE_USER_ERR == $result ) {
+        return $c->render( app_msg( 400, { error => 'user error' } ) );
     }
 
     # other possible error is RESPONSE_NO_ROWS, but the org was just read
     $c->app->log->error(
-        'internal error updating org:' . $c->param('id') . ":$resp" );
+        'internal error updating org:' . $c->param('id') . ":$result-" );
     return $c->render( app_msg( 500, { error => 'internal error' } ) );
 }
 

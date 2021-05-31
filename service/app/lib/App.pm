@@ -57,6 +57,7 @@ sub routes_init ($self) {
     # root-authenticated status
     $with_session->get($STATUS)->to('api-v0-status#status_');
 
+    # ----- org related
     # create a new org
     $with_session->post($ORG)->to('api-v0-org#create_');
 
@@ -67,6 +68,10 @@ sub routes_init ($self) {
 
     # update an org
     $with_session->put($org_id)->to('api-v0-org#update_');
+
+    # ----- user related
+    # create a user
+    $with_session->post($USER)->to('api-v0-user#create_');
 
     $r->any(
         '/*whatever' => { whatever => q{} } => sub ($c) {
