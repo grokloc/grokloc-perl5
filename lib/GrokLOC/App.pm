@@ -10,12 +10,13 @@ our $AUTHORITY = 'cpan:bclawsie';
 
 use base qw(Exporter);
 
-# Headers.
+# headers
 Readonly::Scalar our $X_GROKLOC_ID            => 'X-GrokLOC-ID';
 Readonly::Scalar our $X_GROKLOC_TOKEN_REQUEST => 'X-GrokLOC-Token-Request';
 
-# Auth levels set in the request stash. If you need the request to have a
-# valid JWT, check for $level >= $TOKEN_USER.
+# auth levels set in the request stash. If you need the request to have a
+# valid JWT, check for $level >= $TOKEN_USER
+# must always be monotonically increasing!
 Readonly::Scalar our $AUTH_NONE  => 0;    # Nothing.
 Readonly::Scalar our $AUTH_USER  => 1;    # User valid from db, no JWT.
 Readonly::Scalar our $AUTH_ORG   => 2;    # Org owner valid from db, no JWT.
@@ -24,7 +25,7 @@ Readonly::Scalar our $TOKEN_USER => 4;    # User with JWT.
 Readonly::Scalar our $TOKEN_ORG  => 5;    # Org owner with JWT.
 Readonly::Scalar our $TOKEN_ROOT => 6;    # Root org user with JWT.
 
-# Stash keys.
+# stash keys
 Readonly::Scalar our $STASH_AUTH => 'auth';
 Readonly::Scalar our $STASH_USER => 'user';
 Readonly::Scalar our $STASH_ORG  => 'org';

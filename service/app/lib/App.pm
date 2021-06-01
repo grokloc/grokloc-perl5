@@ -42,36 +42,43 @@ sub hooks_init ($self) {
 sub routes_init ($self) {
     my $r = $self->routes;
 
-    # route endpoints have a suffix of _, middlewares do not
-
-    # GET /ok -> ok, no auth.
+    # ok, no auth
     $r->get($OK_ROUTE)->to('api-v0-ok#ok_');
 
-    # everything under /api/v0 requires a user/org/auth session in the stash
-    # child routes of $with_session should not include the /api/v0 part
-    my $with_session = $r->under($API_ROUTE)->to('api-v0-auth#with_session');
+    # all handlers under /api/v0 requires a user/org/auth session in the stash
+    # child routes of $with_session_ should not include the /api/v0 part
+    my $with_session = $r->under($API_ROUTE)->to('api-v0-auth#with_session_');
+
+   # some handlers under /api/v0 also require a user/org/auth token in the stash
+   # child routes of $with_token_ should not include the /api/v0 part
+    my $with_token = $r->under($API_ROUTE)->to('api-v0-auth#with_token_');
 
     # request a new token
     $with_session->post($TOKEN_REQUEST)->to('api-v0-auth#new_token_');
 
     # root-authenticated status
-    $with_session->get($STATUS)->to('api-v0-status#status_');
+    $with_token->get($STATUS)->to('api-v0-status#status_');
 
     # ----- org related
     # create a new org
-    $with_session->post($ORG)->to('api-v0-org#create_');
+    $with_token->post($ORG)->to('api-v0-org#create_');
 
     my $org_id = $ORG . '/:id';
 
     # read an org
-    $with_session->get($org_id)->to('api-v0-org#read_');
+    $with_token->get($org_id)->to('api-v0-org#read_');
 
     # update an org
-    $with_session->put($org_id)->to('api-v0-org#update_');
+    $with_token->put($org_id)->to('api-v0-org#update_');
 
     # ----- user related
     # create a user
-    $with_session->post($USER)->to('api-v0-user#create_');
+    $with_token->post($USER)->to('api-v0-user#create_');
+
+    my $user_id = $USER . '/:id';
+
+    # read a user
+    $with_token->get($user_id)->to('api-v0-user#read_');
 
     $r->any(
         '/*whatever' => { whatever => q{} } => sub ($c) {

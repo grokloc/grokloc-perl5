@@ -124,7 +124,6 @@ class GrokLOC::App::Client {
     }
 
     # ----- user related
-
     # password should aleady be derived by kdf
     method user_create ( $display_name, $email, $org, $password ) {
         for my $k ( $display_name, $email, $org, $password ) {
@@ -140,6 +139,13 @@ class GrokLOC::App::Client {
                 password     => $password,
             }
         )->result;
+    }
+
+    method user_read ($id) {
+        croak 'malformed id' unless safe_str($id);
+        my $headers = $self->token_request;
+        my $route   = $url . $USER_ROUTE . q{/} . $id;
+        return $ua->get( $route => $headers )->result;
     }
 }
 

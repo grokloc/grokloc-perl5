@@ -71,7 +71,7 @@ sub read_ ( $c ) {
             return $c->render( app_msg( 500, { error => 'internal error' } ) );
         }
 
-        unless ( defined $org ) {
+        if ( !defined $org ) {
             return $c->render( app_msg( 404, { error => 'not found' } ) );
         }
 
@@ -81,7 +81,6 @@ sub read_ ( $c ) {
     # if caller is not root, it can only read its own org (which is stashed)
     my $calling_org = $c->stash($STASH_ORG);
     if ( $c->param('id') ne $calling_org->id ) {
-        $c->app->log->error('not a member of requested org');
         return $c->render(
             app_msg( 403, { error => 'not a member of requested org' } ) );
     }

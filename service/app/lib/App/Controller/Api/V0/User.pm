@@ -1,5 +1,6 @@
 package App::Controller::Api::V0::User;
 use strictures 2;
+use Crypt::Misc qw(random_v4uuid);
 use Mojo::Base 'Mojolicious::Controller';
 use experimental qw(signatures try);
 use GrokLOC::App qw(:all);
@@ -7,6 +8,7 @@ use GrokLOC::App::Message qw(app_msg);
 use GrokLOC::App::Routes qw(:routes);
 use GrokLOC::Models qw(:all);
 use GrokLOC::Models::User;
+use GrokLOC::Security::Crypt qw(:all);
 
 # ABSTRACT: User operations.
 
@@ -46,13 +48,16 @@ sub create_ ( $c ) {
         }
     }
 
+    my $derived =
+      kdf( $user_args{password}, salt(random_v4uuid), $c->st->kdf_iterations );
+
     my $user;
     try {
         $user = GrokLOC::Models::User->new(
             display_name => $user_args{display_name},
             email        => $user_args{email},
             org          => $user_args{org},
-            password     => $user_args{password},       # already derived
+            password     => $derived,
         );
     }
     catch ($e) {
@@ -81,6 +86,115 @@ sub create_ ( $c ) {
     }
     $c->app->log->error('unknown internal error inserting org');
     return $c->render( app_msg( 500, { error => 'internal error' } ) );
+}
+
+sub read_ ( $c ) {
+
+    # regular user can only read themselves, we already know calling_user
+    # is active or auth would have returned 404
+    if ( $c->stash($STASH_AUTH) == $TOKEN_USER ) {
+        my $calling_user = $c->stash($STASH_USER);
+        if ( $c->param('id') ne $calling_user->id ) {
+            return $c->render(
+                app_msg( 403, { error => 'inadequate authorization' } ) );
+        }
+
+        # was already read-in during auth
+        return $c->render( app_msg( 200, $calling_user->TO_JSON() ) );
+    }
+
+    my $user;
+    try {
+        $user = GrokLOC::Models::User::read( $c->st->random_replica(),
+            $c->st->key, $c->param('id') );
+    }
+    catch ($e) {
+        $c->app->log->error(
+            'internal error reading user:' . $c->param('id') . ":$e" );
+        return $c->render( app_msg( 500, { error => 'internal error' } ) );
+    }
+
+    if ( !defined $user ) {
+        return $c->render( app_msg( 404, { error => 'not found' } ) );
+    }
+
+    if ( $c->stash($STASH_AUTH) == $TOKEN_ORG ) {
+
+        # org owner is already known to be active
+        my $calling_user = $c->stash($STASH_USER);
+        if ( $user->org ne $calling_user->org ) {
+            return $c->render(
+                app_msg( 403, { error => 'inadequate authorization' } ) );
+        }
+    }
+
+    # otherwise, is root or is owner of $user's org, so return user even if
+    # not active
+    $c->render( app_msg( 200, $user->TO_JSON() ) );
+    return 1;
+}
+
+sub update_ ( $c ) {
+
+    my %user_args = %{ $c->req->json };
+
+    # regular user can only update themselves (but NOT status),
+    # we already know calling_user is active or auth would
+    # have returned 404
+    if ( $c->stash($STASH_AUTH) == $TOKEN_USER ) {
+        my $calling_user = $c->stash($STASH_USER);
+        if ( $c->param('id') ne $calling_user->id ) {
+            return $c->render(
+                app_msg( 403, { error => 'inadequate authorization' } ) );
+        }
+        if ( exists $user_args{status} ) {
+            return $c->render(
+                app_msg( 403, { error => 'user cannot modify own status' } ) );
+        }
+
+    }
+
+    my $user;
+    if ( $c->stash($STASH_AUTH) == $TOKEN_USER ) {
+        $user = $c->stash($STASH_USER);
+    }
+    else {
+        # org owner or root, so must read user in
+        try {
+            $user = GrokLOC::Models::User::read( $c->st->random_replica(),
+                $c->st->key, $c->param('id') );
+        }
+        catch ($e) {
+            $c->app->log->error(
+                'internal error reading user:' . $c->param('id') . ":$e" );
+            return $c->render( app_msg( 500, { error => 'internal error' } ) );
+        }
+
+        unless ( defined $user ) {
+            return $c->render( app_msg( 404, { error => 'not found' } ) );
+        }
+    }
+
+    if ( $c->stash($STASH_AUTH) == $TOKEN_ORG ) {
+
+        # org owner is already known to be active
+        my $calling_user = $c->stash($STASH_USER);
+        if ( $user->org ne $calling_user->org ) {
+            return $c->render(
+                app_msg( 403, { error => 'inadequate authorization' } ) );
+        }
+    }
+
+    # else - root or other auth preconditions satisfied
+
+    if ( 1 != scalar keys %user_args ) {
+        return $c->render(
+            app_msg( 400, { error => 'only one user updated permitted' } ) );
+    }
+
+    # for password, we must do the kdf here
+
+    return $c->rendered(204);    # placeholder!
 }
 
 1;

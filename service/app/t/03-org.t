@@ -43,7 +43,7 @@ ok(
     'org create'
 ) or note($@);
 
-is( $create_org_result->code, 201, 'org create code' );
+is( $create_org_result->code, 201, 'org create' );
 like( $create_org_result->headers->location,
     qr/\/\S+\/\S+\/\S+\/\S+/, 'location path' );
 my $org_id;
@@ -77,7 +77,7 @@ ok(
     'a_client org create'
 ) or note($@);
 
-is( $create_org_result->code, 403, 'org create code' );
+is( $create_org_result->code, 403, 'org create' );
 
 # duplicates not allowed
 ok(
@@ -87,7 +87,7 @@ ok(
     'org create'
 ) or note($@);
 
-is( $create_org_result->code, 409, 'org create code' );
+is( $create_org_result->code, 409, 'org create' );
 
 # root can read any org
 my $read_org_result;
@@ -98,7 +98,7 @@ ok(
     'org read'
 ) or note($@);
 
-is( $read_org_result->code, 200, 'org read code' );
+is( $read_org_result->code, 200, 'org read' );
 
 my $round_trip_org;
 ok(
@@ -129,7 +129,7 @@ ok(
     'org read'
 ) or note($@);
 
-is( $read_org_result->code, 200, 'org read code' );
+is( $read_org_result->code, 200, 'org read' );
 
 # regular user cannot read an org that they don't belong to
 # $org_id here is a new org created above
@@ -140,7 +140,7 @@ ok(
     'org read'
 ) or note($@);
 
-is( $read_org_result->code, 403, 'org read code' );
+is( $read_org_result->code, 403, 'org read' );
 
 # update org status
 # needs to be set to active to change the owner, so this must be done first anyway

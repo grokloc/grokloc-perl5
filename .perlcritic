@@ -19,3 +19,5 @@ allow = _update_status
 [InputOutput::RequireCheckedSyscalls]
 functions = :builtins
 exclude_functions = print
+[Modules::ProhibitExcessMainComplexity]
+max_mccabe = 30

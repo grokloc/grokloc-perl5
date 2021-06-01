@@ -15,14 +15,14 @@ use GrokLOC::Security::Crypt qw(:all);
 our $VERSION   = '0.01';
 our $AUTHORITY = 'cpan:bclawsie';
 
-# with_session is a middleware that will fill the stash with user and org instances
+# with_session_ is a middleware that will fill the stash with user and org instances
 # subsequent chained handlers can be assured of a stashed user and org
 # subsequent chained handlers can be assured of a minumum auth level of $AUTH_USER
 # see perldocs for more info
-sub with_session ( $c ) {
+sub with_session_ ( $c ) {
     $c->stash( $STASH_AUTH => $AUTH_NONE );
 
-    # The X-GrokLOC-ID header must be present in order to look up the user.
+    # X-GrokLOC-ID header must be present in order to look up the user
     unless ( $c->req->headers->header($X_GROKLOC_ID) ) {
         $c->render( app_msg( 400, { error => 'missing:' . $X_GROKLOC_ID } ) );
         return;
@@ -38,6 +38,7 @@ sub with_session ( $c ) {
         $c->render( app_msg( 500, { error => 'internal error' } ) );
         return;
     }
+
     if ( !defined($user) || $user->meta->status != $STATUS_ACTIVE ) {
         $c->render( app_msg( 404, { error => 'user not found' } ) );
         return;
@@ -92,6 +93,21 @@ sub with_session ( $c ) {
     return 1;
 }
 
+# with_token_ calls to with_session but also requires that the auth
+# level include a token setting (user, org or root) to continue
+sub with_token_ ( $c ) {
+    unless ( $c->with_session_ ) {
+        $c->app->log->error('inlined call to with_session failed');
+        return;
+    }
+    if ( $c->stash($STASH_AUTH) < $TOKEN_USER ) {
+        $c->app->log->error('expected token setting');
+        $c->render( app_msg( 403, { error => 'inadequate authorization' } ) );
+        return;
+    }
+    return 1;
+}
+
 # new_token mints a new jwt for a user if the token request header
 # validates
 # should be treated as a POST handler since a new jwt is always
@@ -105,24 +121,28 @@ sub new_token_ ( $c ) {
         );
     }
 
-    my $user = $c->stash($STASH_USER);
+    my $calling_user = $c->stash($STASH_USER);
     unless (
-        verify_token_request( $token_request, $user->id, $user->api_secret ) )
+        verify_token_request(
+            $token_request, $calling_user->id, $calling_user->api_secret
+        )
+      )
     {
         return $c->render( app_msg( 401, { error => 'bad token request' } ) );
     }
 
     my $token;
     try {
-        $token = encode_token( $user->id, $c->st->key );
+        $token = encode_token( $calling_user->id, $c->st->key );
     }
     catch ($e) {
-        $c->app->log->error("cannot encode token for user:$user->id:$e");
+        $c->app->log->error(
+            "cannot encode token for user:$calling_user->id:$e");
         return $c->render( app_msg( 500, { error => 'internal error' } ) );
     }
 
     $c->res->headers->header( $AUTHORIZATION => $JWT_TYPE . q{ } . $token );
-    $c->app->log->info( 'new token for user ' . $user->id );
+    $c->app->log->info( 'new token for user ' . $calling_user->id );
     return $c->rendered(204);
 }
 
