@@ -148,6 +148,7 @@ class GrokLOC::Models::User extends GrokLOC::Models::Base {
         );
     }
 
+    # password is assumed passed already derived
     method update_password ( $master, $password ) {
         croak 'malformed password' unless safe_str($password);
         return $self->_update( $master, $TABLENAME, $self->id,

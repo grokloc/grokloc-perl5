@@ -200,7 +200,7 @@ ok(
     'org update - bad status'
 ) or note($@);
 
-is( $update_org_result->code, 500, 'org update - bad status' );
+is( $update_org_result->code, 400, 'org update - bad status' );
 
 # update org owner - first we need a new, active user in the org
 my $new_owner = GrokLOC::Models::User->new(
@@ -246,7 +246,6 @@ ok(
     lives {
         my $update_result =
           $new_owner->update_status( $ST->master, $STATUS_ACTIVE );
-        warn 'user update fail'  unless $update_result == $RESPONSE_OK;
         croak 'user update fail' unless $update_result == $RESPONSE_OK;
     },
     'activate new org owner'

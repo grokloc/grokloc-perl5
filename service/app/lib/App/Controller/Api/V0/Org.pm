@@ -7,6 +7,7 @@ use GrokLOC::App::Message qw(app_msg);
 use GrokLOC::App::Routes qw(:routes);
 use GrokLOC::Models qw(:all);
 use GrokLOC::Models::Org;
+use GrokLOC::Security::Input qw(:validators);
 
 # ABSTRACT: Org operations.
 
@@ -118,25 +119,50 @@ sub update_ ( $c ) {
             app_msg( 400, { error => 'only one org updated permitted' } ) );
     }
 
-    my $result;
-    if ( exists $org_args{owner} ) {
-        $result = $org->update_owner( $c->st->master, $org_args{owner} );
-    }
-    elsif ( exists $org_args{status} ) {
-        $result = $org->update_status( $c->st->master, $org_args{status} );
+    if ( exists $org_args{status} ) {
+        unless ( safe_status( $org_args{status} ) ) {
+            return $c->render(
+                app_msg( 400, { error => 'malformed status' } ) );
+        }
     }
     else {
-        return $c->render(
-            app_msg( 400, { error => 'unsupported update attribute' } ) );
+        for my $k ( keys %org_args ) {
+            unless ( safe_str( $org_args{$k} ) ) {
+                return $c->render(
+                    app_msg( 400, { error => "malformed $k" } ) );
+            }
+        }
     }
+
+    my $result;
+    try {
+        if ( exists $org_args{owner} ) {
+            $result = $org->update_owner( $c->st->master, $org_args{owner} );
+        }
+        elsif ( exists $org_args{status} ) {
+            $result = $org->update_status( $c->st->master, $org_args{status} );
+        }
+        else {
+            return $c->render(
+                app_msg( 400, { error => 'unsupported update attribute' } ) );
+        }
+    }
+    catch ($e) {
+        $c->app->log->error(
+            'internal error updating org:' . $c->param('id') . ":$e" );
+        return $c->render( app_msg( 500, { error => 'internal error' } ) );
+    }
+
     if ( $RESPONSE_OK == $result ) {
         return $c->rendered(204);
+    }
+    if ( $RESPONSE_NO_ROWS == $result ) {
+        return $c->render( app_msg( 404, { error => 'no rows updated' } ) );
     }
     if ( $RESPONSE_USER_ERR == $result ) {
         return $c->render( app_msg( 400, { error => 'user error' } ) );
     }
 
-    # other possible error is RESPONSE_NO_ROWS, but the org was just read
     $c->app->log->error(
         'internal error updating org:' . $c->param('id') . ":$result-" );
     return $c->render( app_msg( 500, { error => 'internal error' } ) );

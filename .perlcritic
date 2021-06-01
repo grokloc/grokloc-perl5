@@ -21,3 +21,5 @@ functions = :builtins
 exclude_functions = print
 [Modules::ProhibitExcessMainComplexity]
 max_mccabe = 30
+[Subroutines::ProhibitExcessComplexity]
+max_mccabe = 30

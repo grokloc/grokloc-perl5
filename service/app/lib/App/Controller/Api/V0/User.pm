@@ -9,6 +9,7 @@ use GrokLOC::App::Routes qw(:routes);
 use GrokLOC::Models qw(:all);
 use GrokLOC::Models::User;
 use GrokLOC::Security::Crypt qw(:all);
+use GrokLOC::Security::Input qw(:validators);
 
 # ABSTRACT: User operations.
 
@@ -151,11 +152,12 @@ sub update_ ( $c ) {
             return $c->render(
                 app_msg( 403, { error => 'user cannot modify own status' } ) );
         }
-
     }
 
     my $user;
     if ( $c->stash($STASH_AUTH) == $TOKEN_USER ) {
+
+        # target user is same as the one auth'd
         $user = $c->stash($STASH_USER);
     }
     else {
@@ -192,9 +194,61 @@ sub update_ ( $c ) {
             app_msg( 400, { error => 'only one user updated permitted' } ) );
     }
 
-    # for password, we must do the kdf here
+    if ( exists $user_args{status} ) {
+        unless ( safe_status( $user_args{status} ) ) {
+            return $c->render(
+                app_msg( 400, { error => 'malformed status' } ) );
+        }
+    }
+    else {
+        for my $k ( keys %user_args ) {
+            unless ( safe_str( $user_args{$k} ) ) {
+                return $c->render(
+                    app_msg( 400, { error => "malformed $k" } ) );
+            }
+        }
+    }
 
-    return $c->rendered(204);    # placeholder!
+    my $result;
+    try {
+        if ( exists $user_args{display_name} ) {
+            $result = $user->update_display_name( $c->st->master, $c->st->key,
+                $user_args{display_name} );
+        }
+        elsif ( exists $user_args{password} ) {
+            my $derived =
+              kdf( $user_args{password},
+                salt(random_v4uuid), $c->st->kdf_iterations );
+            $result = $user->update_status( $c->st->master, $derived );
+        }
+        elsif ( exists $user_args{status} ) {
+            $result =
+              $user->update_status( $c->st->master, $user_args{status} );
+        }
+        else {
+            return $c->render(
+                app_msg( 400, { error => 'unsupported update attribute' } ) );
+        }
+    }
+    catch ($e) {
+        $c->app->log->error(
+            'internal error updating org:' . $c->param('id') . ":$e" );
+        return $c->render( app_msg( 500, { error => 'internal error' } ) );
+    }
+
+    if ( $RESPONSE_OK == $result ) {
+        return $c->rendered(204);
+    }
+    if ( $RESPONSE_NO_ROWS == $result ) {
+        return $c->render( app_msg( 404, { error => 'no rows updated' } ) );
+    }
+    if ( $RESPONSE_USER_ERR == $result ) {
+        return $c->render( app_msg( 400, { error => 'user error' } ) );
+    }
+
+    $c->app->log->error(
+        'internal error updating user:' . $c->param('id') . ":$result-" );
+    return $c->render( app_msg( 500, { error => 'internal error' } ) );
 }
 
 1;
