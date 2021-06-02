@@ -129,8 +129,6 @@ else {
     croak 'cannot extract id from ' . $create_user_result->headers->location;
 }
 
-# try to add a user to root org - should fail - web api can't do this
-
 my $read_user_result;
 
 # reading a missing user
@@ -250,6 +248,18 @@ ok(
 ) or note($@);
 
 is( $create_user_result->code, 201, 'user create' );
+
+# never allow users to be added to the root org
+ok(
+    lives {
+        $create_user_result =
+          $root_client->user_create( random_v4uuid, random_v4uuid,
+            $ST->root_org, random_v4uuid );
+    },
+    'user create in root org'
+) or note($@);
+
+is( $create_user_result->code, 403, 'user create in root org' );
 
 # update bad status
 ok(
