@@ -261,7 +261,7 @@ ok(
 
 is( $create_user_result->code, 403, 'user create in root org' );
 
-# update bad status
+# update bad status - always fails
 ok(
     lives {
         $update_user_result =
@@ -272,7 +272,7 @@ ok(
 
 is( $update_user_result->code, 400, 'user update bad status' );
 
-# update no args
+# update no args - always fails
 ok(
     lives {
         $update_user_result = $root_client->user_update( $user_id, {} );
@@ -282,7 +282,7 @@ ok(
 
 is( $update_user_result->code, 400, 'user update no args' );
 
-# update multiple args
+# update multiple args - always fails
 ok(
     lives {
         $update_user_result = $root_client->user_update(

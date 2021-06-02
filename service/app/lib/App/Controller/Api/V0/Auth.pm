@@ -18,6 +18,7 @@ our $AUTHORITY = 'cpan:bclawsie';
 # with_session_ is a middleware that will fill the stash with user and org instances
 # subsequent chained handlers can be assured of a stashed user and org
 # subsequent chained handlers can be assured of a minumum auth level of $AUTH_USER
+# subsequent chained handlers can be assured calling user and org are $STATUS_ACTIVE
 # see perldocs for more info
 sub with_session_ ( $c ) {
     $c->stash( $STASH_AUTH => $AUTH_NONE );

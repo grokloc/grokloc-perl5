@@ -191,17 +191,6 @@ ok(
 
 is( $update_org_result->code, 404, 'org update - not found' );
 
-# update org - bad status
-ok(
-    lives {
-        $update_org_result =
-          $root_client->org_update( $org_id, { status => random_v4uuid } );
-    },
-    'org update - bad status'
-) or note($@);
-
-is( $update_org_result->code, 400, 'org update - bad status' );
-
 # update org owner - first we need a new, active user in the org
 my $new_owner = GrokLOC::Models::User->new(
     display_name => random_v4uuid,
@@ -288,7 +277,18 @@ ok(
 
 is( $update_org_result->code, 403, 'regular user updating org' );
 
-# update with no args
+# update org - bad status - always fails
+ok(
+    lives {
+        $update_org_result =
+          $root_client->org_update( $org_id, { status => random_v4uuid } );
+    },
+    'org update - bad status'
+) or note($@);
+
+is( $update_org_result->code, 400, 'org update - bad status' );
+
+# update with no args always fails
 ok(
     lives {
         $update_org_result = $root_client->org_update( $org_id, {} );
@@ -298,7 +298,7 @@ ok(
 
 is( $update_org_result->code, 400, 'no args' );
 
-# update with multiple args
+# update with multiple args always fails
 ok(
     lives {
         $update_org_result = $root_client->org_update(

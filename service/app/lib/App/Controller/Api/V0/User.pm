@@ -24,6 +24,7 @@ sub create_ ( $c ) {
             app_msg( 403, { error => 'inadequate authorization' } ) );
     }
 
+    # check args
     my %user_args = %{ $c->req->json };
     unless ( 4 == scalar keys %user_args ) {
         return $c->render( app_msg( 400, { error => 'malformed user args' } ) );
@@ -49,9 +50,11 @@ sub create_ ( $c ) {
         }
     }
 
+    # derive password
     my $derived =
       kdf( $user_args{password}, salt(random_v4uuid), $c->st->kdf_iterations );
 
+    # make obj
     my $user;
     try {
         $user = GrokLOC::Models::User->new(
@@ -66,6 +69,7 @@ sub create_ ( $c ) {
         return $c->render( app_msg( 500, { error => 'internal error' } ) );
     }
 
+    # insert
     my $result;
     try {
         $result = $user->insert( $c->st->master, $c->st->key );
@@ -100,7 +104,6 @@ sub read_ ( $c ) {
                 app_msg( 403, { error => 'inadequate authorization' } ) );
         }
 
-        # was already read-in during auth
         return $c->render( app_msg( 200, $calling_user->TO_JSON() ) );
     }
 
@@ -121,7 +124,7 @@ sub read_ ( $c ) {
 
     if ( $c->stash($STASH_AUTH) == $TOKEN_ORG ) {
 
-        # org owner is already known to be active
+        # org owner must be in same org as user being read
         my $calling_user = $c->stash($STASH_USER);
         if ( $user->org ne $calling_user->org ) {
             return $c->render(
@@ -140,8 +143,6 @@ sub update_ ( $c ) {
     my %user_args = %{ $c->req->json };
 
     # regular user can only update themselves (but NOT status),
-    # we already know calling_user is active or auth would
-    # have returned 404
     if ( $c->stash($STASH_AUTH) == $TOKEN_USER ) {
         my $calling_user = $c->stash($STASH_USER);
         if ( $c->param('id') ne $calling_user->id ) {
@@ -179,7 +180,7 @@ sub update_ ( $c ) {
 
     if ( $c->stash($STASH_AUTH) == $TOKEN_ORG ) {
 
-        # org owner is already known to be active
+        # org owner must be in same org as user
         my $calling_user = $c->stash($STASH_USER);
         if ( $user->org ne $calling_user->org ) {
             return $c->render(
@@ -189,6 +190,7 @@ sub update_ ( $c ) {
 
     # else - root or other auth preconditions satisfied
 
+    # check args
     if ( 1 != scalar keys %user_args ) {
         return $c->render(
             app_msg( 400, { error => 'only one user updated permitted' } ) );
@@ -209,6 +211,7 @@ sub update_ ( $c ) {
         }
     }
 
+    # do update
     my $result;
     try {
         if ( exists $user_args{display_name} ) {

@@ -22,11 +22,13 @@ sub create_ ( $c ) {
             app_msg( 403, { error => 'inadequate authorization' } ) );
     }
 
+    # check args
     my %org_args = %{ $c->req->json };
     unless ( 1 == scalar keys %org_args && exists $org_args{name} ) {
         return $c->render( app_msg( 400, { error => 'malformed org args' } ) );
     }
 
+    # make obj
     my $org;
     try {
         $org = GrokLOC::Models::Org->new( name => $org_args{name} );
@@ -36,6 +38,7 @@ sub create_ ( $c ) {
         return $c->render( app_msg( 500, { error => 'internal error' } ) );
     }
 
+    # insert
     my $result;
     try {
         $result = $org->insert( $c->st->master );
@@ -79,6 +82,8 @@ sub read_ ( $c ) {
         return $c->render( app_msg( 200, $org->TO_JSON() ) );
     }
 
+    # otherwise, a regular user or org owner
+
     # if caller is not root, it can only read its own org (which is stashed)
     my $calling_org = $c->stash($STASH_ORG);
     if ( $c->param('id') ne $calling_org->id ) {
@@ -86,13 +91,12 @@ sub read_ ( $c ) {
             app_msg( 403, { error => 'not a member of requested org' } ) );
     }
 
-    # the org was already read during auth, so just return it
     return $c->render( app_msg( 200, $calling_org->TO_JSON() ) );
 }
 
 sub update_ ( $c ) {
 
-    # only root can create an org
+    # only root can update an org
     if ( $c->stash($STASH_AUTH) != $TOKEN_ROOT ) {
         return $c->render(
             app_msg( 403, { error => 'inadequate authorization' } ) );
@@ -113,6 +117,7 @@ sub update_ ( $c ) {
         return $c->render( app_msg( 404, { error => 'not found' } ) );
     }
 
+    # check args
     my %org_args = %{ $c->req->json };
     if ( 1 != scalar keys %org_args ) {
         return $c->render(
@@ -134,6 +139,7 @@ sub update_ ( $c ) {
         }
     }
 
+    # do update
     my $result;
     try {
         if ( exists $org_args{owner} ) {
