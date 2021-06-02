@@ -43,7 +43,7 @@ sub create_ ( $c ) {
     # if caller is an org owner, must be in same org as prospective new user
     if ( $c->stash($STASH_AUTH) == $TOKEN_ORG ) {
         my $calling_user = $c->stash($STASH_USER);
-        if ( $calling_user->org != $user_args{org} ) {
+        if ( $calling_user->org ne $user_args{org} ) {
             return $c->render(
                 app_msg( 403, { error => 'inadequate authorization' } ) );
         }
@@ -150,7 +150,7 @@ sub update_ ( $c ) {
         }
         if ( exists $user_args{status} ) {
             return $c->render(
-                app_msg( 403, { error => 'user cannot modify own status' } ) );
+                app_msg( 403, { error => 'cannot modify own status' } ) );
         }
     }
 
@@ -247,7 +247,7 @@ sub update_ ( $c ) {
     }
 
     $c->app->log->error(
-        'internal error updating user:' . $c->param('id') . ":$result-" );
+        'internal error updating user:' . $c->param('id') . ":$result" );
     return $c->render( app_msg( 500, { error => 'internal error' } ) );
 }
 

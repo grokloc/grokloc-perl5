@@ -93,7 +93,7 @@ ok(
     'user create - org not active'
 ) or note($@);
 
-is( $create_user_result->code, 400, 'user ceate - org not active' );
+is( $create_user_result->code, 400, 'user create - org not active' );
 
 # now make org active again so user insertion will proceed
 ok(
@@ -117,7 +117,7 @@ ok(
     'user create - org active'
 ) or note($@);
 
-is( $create_user_result->code, 201, 'user ceate - org active' );
+is( $create_user_result->code, 201, 'user create - org active' );
 
 like( $create_user_result->headers->location,
     qr/\/\S+\/\S+\/\S+\/\S+/, 'location path' );
@@ -180,15 +180,112 @@ ok(
     'user read missing'
 ) or note($@);
 
-# update to be active then retry (requires update support)
+# update to be active then retry
+my $update_user_result;
 
-# user $user_id is a regular (non-owner) user in org $org_id, can
-# read itself
+ok(
+    lives {
+        $update_user_result =
+          $root_client->user_update( $user_id, { status => $STATUS_ACTIVE } );
+    },
+    'user update to active'
+) or note($@);
+
+is( $update_user_result->code, 204, 'user update to active' );
+
+# re-read the user to be sure
+my $update_confirm_user_result;
+ok(
+    lives {
+        $update_confirm_user_result = $root_client->user_read($user_id);
+    },
+    'user read'
+) or note($@);
+
+is( $update_confirm_user_result->json->{meta}->{status},
+    $STATUS_ACTIVE, 'user active' );
+
+# now user is active and can read themselves
+ok(
+    lives {
+        $read_user_result = $a_user_client->user_read($user_id);
+    },
+    'user read missing'
+) or note($@);
+
+is( $read_user_result->code, 200, 'user read' );
+is( $read_user_result->json->{id}, $user_id );
 
 # but not (yet) make other users in the org
+ok(
+    lives {
+        $create_user_result =
+          $a_user_client->user_create( random_v4uuid, random_v4uuid, $org_id,
+            random_v4uuid );
+    },
+    'user create - not owner'
+) or note($@);
+
+is( $create_user_result->code, 403, 'user create - not owner' );
 
 # update it to owner, then insert a new user
+ok(
+    lives {
+        $update_org_result =
+          $root_client->org_update( $org_id, { owner => $user_id } );
+    },
+    'user update to owner'
+) or note($@);
+
+is( $update_org_result->code, 204, 'user update to owner' );
 
 # now make a new user
+ok(
+    lives {
+        $create_user_result =
+          $a_user_client->user_create( random_v4uuid, random_v4uuid, $org_id,
+            random_v4uuid );
+    },
+    'user create'
+) or note($@);
+
+is( $create_user_result->code, 201, 'user create' );
+
+# update bad status
+ok(
+    lives {
+        $update_user_result =
+          $root_client->user_update( $user_id, { status => random_v4uuid } );
+    },
+    'user update bad status'
+) or note($@);
+
+is( $update_user_result->code, 400, 'user update bad status' );
+
+# update no args
+ok(
+    lives {
+        $update_user_result = $root_client->user_update( $user_id, {} );
+    },
+    'user update no args'
+) or note($@);
+
+is( $update_user_result->code, 400, 'user update no args' );
+
+# update multiple args
+ok(
+    lives {
+        $update_user_result = $root_client->user_update(
+            $user_id,
+            {
+                status   => $STATUS_ACTIVE,
+                password => random_v4uuid,
+            }
+        );
+    },
+    'user update multiple args'
+) or note($@);
+
+is( $update_user_result->code, 400, 'user update multiple args' );
 
 done_testing();

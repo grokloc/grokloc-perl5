@@ -80,6 +80,9 @@ sub routes_init ($self) {
     # read a user
     $with_token->get($user_id)->to('api-v0-user#read_');
 
+    # update a user
+    $with_token->put($user_id)->to('api-v0-user#update_');
+
     $r->any(
         '/*whatever' => { whatever => q{} } => sub ($c) {
             my $whatever = $c->param('whatever');

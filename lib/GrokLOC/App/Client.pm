@@ -147,6 +147,14 @@ class GrokLOC::App::Client {
         my $route   = $url . $USER_ROUTE . q{/} . $id;
         return $ua->get( $route => $headers )->result;
     }
+
+    method user_update ($id, $args) {
+        croak 'malformed id'   unless safe_str($id);
+        croak 'malformed args' unless ( ref($args) eq 'HASH' );
+        my $headers = $self->token_request;
+        my $route   = $url . $USER_ROUTE . q{/} . $id;
+        return $ua->put( $route => $headers => json => $args )->result;
+    }
 }
 
 1;
