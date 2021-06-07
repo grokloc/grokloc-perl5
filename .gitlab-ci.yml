@@ -1,4 +1,4 @@
-image: grokloc/grokloc-perl5:ci
+image: grokloc/grokloc-perl5:dev
 
 variables:
   PERL5LIB: "/builds/grokloc/grokloc-perl5/lib:/builds/grokloc/grokloc-perl5/service/app/lib"

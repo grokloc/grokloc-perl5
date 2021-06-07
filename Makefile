@@ -1,4 +1,3 @@
-IMG_CI       = grokloc/grokloc-perl5:dev
 IMG_DEV      = grokloc/grokloc-perl5:dev
 DOCKER       = docker
 DOCKER_RUN   = $(DOCKER) run --rm -it
@@ -19,14 +18,9 @@ APP_MAIN     = service/app/script/app
 RUN          = $(DOCKER_RUN) -v $(CWD):$(BASE) -w $(BASE) $(UNIT_ENVS) $(PORTS) $(IMG_DEV)
 
 # Base/CI image.
-.PHONY: docker-ci
-docker-ci:
-	$(DOCKER) build . -f Dockerfile -t $(IMG_CI)
-
-# Dev image.
-.PHONY: docker-dev
-docker-dev: docker-ci
-	$(DOCKER) tag $(IMG_CI) $(IMG_DEV)
+.PHONY: docker
+docker:
+	$(DOCKER) build . -f Dockerfile -t $(IMG_DEV)
 
 # Shell in container.
 .PHONY: shell

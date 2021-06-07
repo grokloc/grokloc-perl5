@@ -2,7 +2,7 @@ version: 2
 jobs:
   build:
     docker:
-      - image: grokloc/grokloc-perl5:ci
+      - image: grokloc/grokloc-perl5:dev
     environment:
       PERL5LIB: "/grokloc/lib:/grokloc/service/app/lib"
       PERLCRITIC: "/grokloc/.perlcritic"
