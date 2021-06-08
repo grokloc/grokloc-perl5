@@ -1,4 +1,5 @@
 IMG_DEV      = grokloc/grokloc-perl5:dev
+IMG_COMPOSE  = grokloc/grokloc-perl5:compose
 DOCKER       = docker
 DOCKER_RUN   = $(DOCKER) run --rm -it
 CWD          = $(shell pwd)
@@ -20,7 +21,12 @@ RUN          = $(DOCKER_RUN) -v $(CWD):$(BASE) -w $(BASE) $(UNIT_ENVS) $(PORTS) 
 # Base/CI image.
 .PHONY: docker
 docker:
-	$(DOCKER) build . -f Dockerfile -t $(IMG_DEV)
+	$(DOCKER) build . -f Dockerfile.dev -t $(IMG_DEV)
+
+# Compose build.
+.PHONY: compose
+compose:
+	$(DOCKER) build . -f Dockerfile.compose -t $(IMG_COMPOSE)
 
 # Shell in container.
 .PHONY: shell
