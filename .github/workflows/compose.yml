@@ -4,17 +4,10 @@ jobs:
   compose:
     runs-on: ubuntu-latest
     env:
-      PERL5LIB: "/__w/grokloc-perl5/grokloc-perl5/lib:/__w/grokloc-perl5/grokloc-perl5/service/app/lib"
-      PERLCRITIC: "/__w/grokloc-perl5/grokloc-perl5/.perlcritic"
-      PERL_JSON_BACKEND: "Cpanel::JSON::XS,JSON::XS,JSON::PP"
-      CHECKOUT_PATH: "/__w/grokloc-perl5/grokloc-perl5"
-      GROKLOC_ENV: "UNIT"
-      APP_HOST: "localhost"
-      APP_PORT: "3000"
       CI: "1"
     steps:
       - uses: actions/checkout@v2
-      - name: perl version
-        run: perl --version
       - name: compose version
         run: docker-compose --version
+      - name: compose up
+        run: docker-compose up -d
