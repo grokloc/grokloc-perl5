@@ -23,6 +23,11 @@ RUN          = $(DOCKER_RUN) -v $(CWD):$(BASE) -w $(BASE) $(UNIT_ENVS) $(PORTS) 
 docker:
 	$(DOCKER) build . -f Dockerfile.dev -t $(IMG_DEV)
 
+# Base/CI image. Force.
+.PHONY: docker-force
+docker-force:
+	$(DOCKER) build --no-cache . -f Dockerfile.dev -t $(IMG_DEV)
+
 # Compose build.
 .PHONY: compose
 compose:
