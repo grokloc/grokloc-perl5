@@ -10,7 +10,7 @@ UNIT_ENVS    = --env-file ./env/unit.env
 PORTS        = -p 3000:3000
 BASE         = /grokloc
 TIDY         = perltidier
-PERLIMPORTS  = perlimports
+PERLIMPORTS  = perlimports -i --no-preserve-unused --libs lib,service/app/lib -f
 CRITIC_ARGS  = 
 TCRITIC_ARGS = --theme=tests
 LIBS         = $(shell find . -type f -name \*pm)
@@ -88,17 +88,17 @@ local-test:
 # perlimports.
 .PHONY: local-imports
 local-imports:
-	find lib -type f | grep .pm$ | xargs -n 1 perlimports -i --no-preserved-unused --libs lib,service/app/lib -f
-	find lib -type f | grep .t$ | xargs -n 1 perlimports -i --libs lib,service/app/lib -f
+	find lib -type f | grep .pm$ | xargs -n 1 $(PERLIMPORTS)
+	find lib -type f | grep .t$ | xargs -n 1 $(PERLIMPORTS)
 
 # perltidy.
 .PHONY: local-tidy
 local-tidy:
-	find -name \*.pm$ -print0 | xargs -0 perl -pi -e 's/\:(reader|writer|mutator)\;/; #:$$1/msx'
-	find -name \*.pm$ -print0 | xargs -0 $(TIDY) -b 2>/dev/null
-	find -name \*.pm$ -print0 | xargs -0 perl -pi -e 's/\;\s+\#\:(reader|writer|mutator)/\:$$1\;/msx'
-	find -name \*.t$ -print0 | xargs -0 $(TIDY) -b 2>/dev/null
-	find -name \*bak$ -delete
+	find -name \*.pm -print0 | xargs -0 perl -pi -e 's/\:(reader|writer|mutator)\;/; #:$$1/msx'
+	find -name \*.pm -print0 | xargs -0 $(TIDY) -b 2>/dev/null
+	find -name \*.pm -print0 | xargs -0 perl -pi -e 's/\;\s+\#\:(reader|writer|mutator)/\:$$1\;/msx'
+	find -name \*.t -print0 | xargs -0 $(TIDY) -b 2>/dev/null
+	find -name \*bak -delete
 
 # perlcritic.
 .PHONY: local-critic

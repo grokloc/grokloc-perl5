@@ -7,7 +7,6 @@ use GrokLOC::Models qw( $RESPONSE_OK $STATUS_ACTIVE );
 use GrokLOC::Models::Org;
 use GrokLOC::Models::User;
 use GrokLOC::Security::Crypt qw( kdf salt );
-use GrokLOC::Security::Input ();
 
 # ABSTRACT: Useful testing utilities.
 

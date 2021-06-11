@@ -5,7 +5,6 @@ use Crypt::Misc qw( random_v4uuid );
 use English qw(-no_match_vars);
 use Mojo::SQLite;
 use experimental qw(signatures);
-use GrokLOC::Env ();
 use GrokLOC::Models ();
 use GrokLOC::Models::Org;
 use GrokLOC::Models::User;
@@ -21,7 +20,7 @@ our $AUTHORITY = 'cpan:bclawsie';
 
 # unit_init initializes a State instance for the Unit environment.
 sub init () {
-    my $db = 'sqlite::memory:?PrintError=0';
+    my $db     = 'sqlite::memory:?PrintError=0';
     my $master = Mojo::SQLite->new($db) || croak "new db: $ERRNO";
     $master->migrations->name('app')->from_string($GrokLOC::Schemas::APP);
     $master->migrations->migrate(0)->migrate || croak "migrate: $ERRNO";
