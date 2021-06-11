@@ -1,7 +1,7 @@
 package GrokLOC::App::JWT;
 use strictures 2;
 use Crypt::Digest::SHA256 qw( sha256_b64 );
-use Crypt::JWT qw(:all);
+use Crypt::JWT qw( decode_jwt encode_jwt );
 use Exporter;
 use Readonly ();
 use experimental qw(signatures);

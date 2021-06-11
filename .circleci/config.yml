@@ -15,6 +15,6 @@ jobs:
     working_directory: /grokloc
     steps:
       - checkout
-      - run: make ci-check
-      - run: make ci-test
-      - run: make ci-critic
+      - run: make local-check
+      - run: make local-test
+      - run: make local-critic

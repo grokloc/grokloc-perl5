@@ -3,8 +3,6 @@ use strictures 2;
 use Carp qw( croak );
 use Crypt::Misc qw( random_v4uuid );
 use English qw(-no_match_vars);
-use File::Spec ();
-use File::Temp ();
 use Mojo::SQLite;
 use experimental qw(signatures);
 use GrokLOC::Env ();

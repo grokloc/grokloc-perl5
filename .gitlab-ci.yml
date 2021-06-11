@@ -21,14 +21,14 @@ stages:
 check:
   stage: check
   script:
-    - make ci-check
+    - make local-check
 
 test:
   stage: test
   script:
-    - make ci-test
+    - make local-test
 
 critic:
   stage: critic
   script:
-    - make ci-critic
+    - make local-critic
