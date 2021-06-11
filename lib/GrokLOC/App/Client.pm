@@ -1,12 +1,18 @@
 package GrokLOC::App::Client;
 use Object::Pad;
 use strictures 2;
-use Carp qw(croak);
+use Carp qw( croak );
 use experimental qw(signatures);
-use GrokLOC::App qw(:all);
+use GrokLOC::App qw( $X_GROKLOC_ID $X_GROKLOC_TOKEN_REQUEST );
 use GrokLOC::App::JWT qw(:all);
-use GrokLOC::App::Routes qw(:routes);
-use GrokLOC::Security::Input qw(:validators);
+use GrokLOC::App::Routes qw(
+    $OK_ROUTE
+    $ORG_ROUTE
+    $STATUS_ROUTE
+    $TOKEN_REQUEST_ROUTE
+    $USER_ROUTE
+);
+use GrokLOC::Security::Input qw( safe_objs safe_str );
 
 # ABSTRACT: App client library.
 

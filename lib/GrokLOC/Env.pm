@@ -1,6 +1,6 @@
 package GrokLOC::Env;
 use strictures 2;
-use Readonly;
+use Readonly ();
 
 # ABSTRACT: Environment settings for GrokLOC.
 

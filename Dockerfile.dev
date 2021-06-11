@@ -40,7 +40,12 @@ RUN cpanm -n \
     IO::Socket::SSL \
     strictures \
     App::Ack \
-    Data::Dumper
+    Data::Dumper \
+    Sub::Info \
+    List::SomeUtils \
+    List::UtilsBy \
+    List::MoreUtils \
+    App::perlimports
 
 RUN rm -f /root/.cpan/build.log && rm -f /root/.cpan/latest-build
 RUN apt -y purge build-essential

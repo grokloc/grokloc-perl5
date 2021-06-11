@@ -1,9 +1,9 @@
 package GrokLOC::State::Init;
 use strictures 2;
-use Carp qw(croak);
-use List::AllUtils qw(any);
+use Carp qw( croak );
+use List::AllUtils qw( any );
 use experimental qw(signatures switch);
-use GrokLOC::Env qw(:all);
+use GrokLOC::Env qw( $UNIT @LEVELS );
 use GrokLOC::State::Unit;
 
 # ABSTRACT: Initialize a State instance for the environment.

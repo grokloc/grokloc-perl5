@@ -1,18 +1,18 @@
 package GrokLOC::State::Unit;
 use strictures 2;
-use Carp qw(croak);
-use Crypt::Misc qw(random_v4uuid);
+use Carp qw( croak );
+use Crypt::Misc qw( random_v4uuid );
 use English qw(-no_match_vars);
-use File::Spec;
-use File::Temp qw(tempdir);
+use File::Spec ();
+use File::Temp ();
 use Mojo::SQLite;
 use experimental qw(signatures);
-use GrokLOC::Env qw(:all);
-use GrokLOC::Models qw(:all);
+use GrokLOC::Env ();
+use GrokLOC::Models ();
 use GrokLOC::Models::Org;
 use GrokLOC::Models::User;
 use GrokLOC::Schemas;
-use GrokLOC::Security::Crypt qw(:all);
+use GrokLOC::Security::Crypt qw( key );
 use GrokLOC::State;
 use GrokLOC::Test;
 
@@ -23,7 +23,7 @@ our $AUTHORITY = 'cpan:bclawsie';
 
 # unit_init initializes a State instance for the Unit environment.
 sub init () {
-    my $db     = 'sqlite:' . File::Spec->catfile( tempdir, 'app.db' );
+    my $db = 'sqlite::memory:?PrintError=0';
     my $master = Mojo::SQLite->new($db) || croak "new db: $ERRNO";
     $master->migrations->name('app')->from_string($GrokLOC::Schemas::APP);
     $master->migrations->migrate(0)->migrate || croak "migrate: $ERRNO";

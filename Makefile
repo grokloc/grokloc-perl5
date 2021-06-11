@@ -10,9 +10,10 @@ UNIT_ENVS    = --env-file ./env/unit.env
 PORTS        = -p 3000:3000
 BASE         = /grokloc
 TIDY         = perltidier
+PERLIMPORTS  = perlimports
 CRITIC_ARGS  =
 TCRITIC_ARGS = --theme=tests
-LIBS         = $(shell find . -type f -name \*pm)
+LIBS         = $(shell find . -type f -name \*pm$)
 LIB_TESTS    = $(shell find t -type f)
 APP_TESTS    = $(shell if [ -d service/app/t ]; then find service/app/t -type f; fi)
 APP_MAIN     = service/app/script/app
@@ -53,12 +54,17 @@ check:
 test:
 	$(RUN) make ci-test
 
-# Perltidy in container.
+# perlimports in container.
+.PHONY: imports
+imports:
+	$(RUN) make ci-imports
+
+# perltidy in container.
 .PHONY: tidy
 tidy:
 	$(RUN) make ci-tidy
 
-# Perlcritic in container.
+# perlcritic in container.
 .PHONY: critic
 critic:
 	$(RUN) make ci-critic
@@ -79,16 +85,22 @@ ci-check:
 ci-test:
 	$(TEST_RUNNER) $(LIB_TESTS) $(APP_TESTS)
 
-# Perltidy.
+# perlimports.
+.PHONY: ci-imports
+ci-imports:
+	find lib -type f | grep .pm$ | xargs -n 1 perlimports -i --libs lib,service/app/lib -f
+	find lib -type f | grep .t$ | xargs -n 1 perlimports -i --libs lib,service/app/lib -f
+
+# perltidy.
 .PHONY: ci-tidy
 ci-tidy:
-	find -name \*.pm -print0 | xargs -0 perl -pi -e 's/\:(reader|writer|mutator)\;/; #:$$1/msx'
-	find -name \*.pm -print0 | xargs -0 $(TIDY) -b 2>/dev/null
-	find -name \*.pm -print0 | xargs -0 perl -pi -e 's/\;\s+\#\:(reader|writer|mutator)/\:$$1\;/msx'
-	find -name \*.t -print0 | xargs -0 $(TIDY) -b 2>/dev/null
-	find -name \*bak -delete
+	find -name \*.pm$ -print0 | xargs -0 perl -pi -e 's/\:(reader|writer|mutator)\;/; #:$$1/msx'
+	find -name \*.pm$ -print0 | xargs -0 $(TIDY) -b 2>/dev/null
+	find -name \*.pm$ -print0 | xargs -0 perl -pi -e 's/\;\s+\#\:(reader|writer|mutator)/\:$$1\;/msx'
+	find -name \*.t$ -print0 | xargs -0 $(TIDY) -b 2>/dev/null
+	find -name \*bak$ -delete
 
-# Perlcritic.
+# perlcritic.
 .PHONY: ci-critic
 ci-critic:
 	perlcritic $(CRITIC_ARGS) $(LIBS)

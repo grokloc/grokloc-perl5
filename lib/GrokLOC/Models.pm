@@ -1,6 +1,6 @@
 package GrokLOC::Models;
 use strictures 2;
-use Readonly;
+use Readonly ();
 use experimental qw(signatures);
 
 # ABSTRACT: Core model definitions.

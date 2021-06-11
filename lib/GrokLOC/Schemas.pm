@@ -1,6 +1,6 @@
 package GrokLOC::Schemas;
 use strictures 2;
-use Readonly;
+use Readonly ();
 
 # ABSTRACT: Full schema definitions for GrokLOC dbs.
 

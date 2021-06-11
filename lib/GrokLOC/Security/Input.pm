@@ -1,9 +1,9 @@
 package GrokLOC::Security::Input;
 use strictures 2;
-use Carp qw(croak);
+use Carp qw( croak );
 use Exporter;
 use List::AllUtils qw( all any );
-use Readonly;
+use Readonly ();
 use experimental qw(signatures);
 
 # ABSTRACT: Input and var validation functions.

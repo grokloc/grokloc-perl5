@@ -1,10 +1,10 @@
 package GrokLOC::State;
 use Object::Pad;
 use strictures 2;
-use Carp qw(croak);
+use Carp qw( croak );
 use Mojo::SQLite;
 use experimental qw(signatures);
-use GrokLOC::Security::Input qw(:validators);
+use GrokLOC::Security::Input qw( safe_kdf_iterations safe_objs safe_str );
 
 # ABSTRACT: Core state for the GrokLOC app.
 

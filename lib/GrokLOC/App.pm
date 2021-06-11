@@ -1,7 +1,7 @@
 package GrokLOC::App;
 use strictures 2;
 use Exporter;
-use Readonly;
+use Readonly ();
 
 # ABSTRACT: App symbols.
 

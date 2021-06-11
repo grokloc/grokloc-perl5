@@ -1,7 +1,7 @@
 package GrokLOC::App::Routes;
 use strictures 2;
 use Exporter;
-use Readonly;
+use Readonly ();
 
 # ABSTRACT: Route definitions.
 
