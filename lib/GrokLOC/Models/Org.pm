@@ -99,12 +99,13 @@ class GrokLOC::Models::Org extends GrokLOC::Models::Base {
           unless ( defined $v )
           && ( $v->{status} == $STATUS_ACTIVE )
           && ( $v->{org} eq $self->id );
-        return $self->_update( $master, $TABLENAME, $self->id,
+        return GrokLOC::Models::update( $master, $TABLENAME, $self->id,
             { owner => $owner } );
     }
 
     method update_status ( $master, $status ) {
-        return $self->_update_status( $master, $TABLENAME, $self->id, $status );
+        return GrokLOC::Models::update_status( $master, $TABLENAME, $self->id,
+            $status );
     }
 
     method TO_JSON {

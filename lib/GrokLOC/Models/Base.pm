@@ -4,7 +4,7 @@ use strictures 2;
 use Carp qw( croak );
 use Crypt::Misc qw( random_v4uuid );
 use experimental qw(signatures);
-use GrokLOC::Models qw( $RESPONSE_NO_ROWS $RESPONSE_OK safe_status );
+use GrokLOC::Models ();
 use GrokLOC::Models::Meta;
 use GrokLOC::Security::Input qw( safe_objs safe_str );
 
@@ -48,20 +48,6 @@ class GrokLOC::Models::Base {
         }
 
         return;
-    }
-
-    method _update_status ( $master, $tablename, $id, $status ) {
-        croak 'status invalid' unless safe_status($status);
-        return $self->_update( $master, $tablename, $id,
-            { status => $status } );
-    }
-
-    method _update ( $master, $tablename, $id, $fieldvals ) {
-        my $rows =
-          $master->db->update( $tablename, $fieldvals, { id => $id } )->rows;
-        croak 'update altered more than one row' if ( $rows > 1 );
-        return $RESPONSE_NO_ROWS                 if ( $rows == 0 );
-        return $RESPONSE_OK;
     }
 }
 

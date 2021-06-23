@@ -143,7 +143,7 @@ class GrokLOC::Models::User extends GrokLOC::Models::Base {
 
     method update_display_name ( $master, $key, $display_name ) {
         croak 'malformed display_name' unless safe_str($display_name);
-        return $self->_update(
+        return GrokLOC::Models::update(
             $master,
             $TABLENAME,
             $self->id,
@@ -158,12 +158,13 @@ class GrokLOC::Models::User extends GrokLOC::Models::Base {
     # password is assumed passed already derived
     method update_password ( $master, $password ) {
         croak 'malformed password' unless safe_str($password);
-        return $self->_update( $master, $TABLENAME, $self->id,
+        return GrokLOC::Models::update( $master, $TABLENAME, $self->id,
             { password => $password } );
     }
 
     method update_status ( $master, $status ) {
-        return $self->_update_status( $master, $TABLENAME, $self->id, $status );
+        return GrokLOC::Models::update_status( $master, $TABLENAME, $self->id,
+            $status );
     }
 
     method TO_JSON {
