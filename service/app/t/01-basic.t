@@ -27,7 +27,7 @@ $t->post_ok(
     $TOKEN_REQUEST_ROUTE => {
         $X_GROKLOC_ID => random_v4uuid,
     }
-)->status_is(404);
+)->status_is(400);
 
 # Bad token.
 $t->post_ok(
@@ -45,7 +45,7 @@ $t->post_ok(
         $X_GROKLOC_ID            => $ST->root_user,
         $X_GROKLOC_TOKEN_REQUEST => $token_request,
     }
-)->status_is(204);
+)->status_is(200);
 
 # Further tests require state - use the client.
 

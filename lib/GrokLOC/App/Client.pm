@@ -2,11 +2,13 @@ package GrokLOC::App::Client;
 use Object::Pad;
 use strictures 2;
 use Carp qw( croak );
+use Mojo::JSON qw( decode_json );
 use experimental qw(signatures);
 use GrokLOC::App qw( $X_GROKLOC_ID $X_GROKLOC_TOKEN_REQUEST );
 use GrokLOC::App::JWT qw(
   $AUTHORIZATION
   $JWT_EXPIRATION
+  $JWT_TYPE
   encode_token_request
 );
 use GrokLOC::App::Routes qw(
@@ -32,7 +34,7 @@ class GrokLOC::App::Client {
     has $ua :reader;
 
     has $_token;
-    has $_token_time;
+    has $_token_expires;
 
     BUILD(%args) {
         for my $k (qw(url id api_secret)) {
@@ -55,8 +57,8 @@ class GrokLOC::App::Client {
 
         # Token already passed, just return it.
         if (   defined $_token
-            && defined $_token_time
-            && $_token_time > $now )
+            && defined $_token_expires
+            && $_token_expires > $now )
         {
             return {
                 $X_GROKLOC_ID  => $id,
@@ -72,19 +74,20 @@ class GrokLOC::App::Client {
 
         my $route  = $url . $TOKEN_REQUEST_ROUTE;
         my $result = $ua->post( $route => $headers )->result;
-        if ( 204 != $result->code ) {
+        if ( 200 != $result->code ) {
             croak 'token request code ' . $result->code;
         }
-        if ( !defined $result->headers->authorization ) {
-            croak 'no authorization result headers';
-        }
-        $_token = $result->headers->authorization;
 
-        # subtract a one minute to be safe
-        $_token_time = $now + $JWT_EXPIRATION - 60;
+        my $token_fields = decode_json $result->body;
+        croak 'body parse' unless (defined $token_fields && ref $token_fields eq 'HASH');
+        croak 'missing token' unless (exists $token_fields->{token});
+        croak 'missing expires' unless (exists $token_fields->{expires});        
+        $_token = $token_fields->{token};
+        $_token_expires = $token_fields->{expires};
+
         return {
             $X_GROKLOC_ID  => $id,
-            $AUTHORIZATION => $_token
+            $AUTHORIZATION => $JWT_TYPE . q{ } . $_token
         };
     }
 

@@ -41,7 +41,7 @@ sub with_session_ ( $c ) {
     }
 
     if ( !defined($user) || $user->meta->status != $STATUS_ACTIVE ) {
-        $c->render( app_msg( 404, { error => 'user not found' } ) );
+        $c->render( app_msg( 400, { error => 'user not found' } ) );
         return;
     }
 
@@ -62,6 +62,7 @@ sub with_session_ ( $c ) {
 
     my $auth_level = $AUTH_USER;
     if ( $org->id eq $c->st->root_org ) {
+        # allow for multiple accounts in root org
         $auth_level = $AUTH_ROOT;
     }
     elsif ( $org->owner eq $user->id ) {
@@ -132,6 +133,7 @@ sub new_token_ ( $c ) {
         return $c->render( app_msg( 401, { error => 'bad token request' } ) );
     }
 
+    my $now = time;
     my $token;
     try {
         $token = encode_token( $calling_user->id, $c->st->key );
@@ -142,9 +144,12 @@ sub new_token_ ( $c ) {
         return $c->render( app_msg( 500, { error => 'internal error' } ) );
     }
 
-    $c->res->headers->header( $AUTHORIZATION => $JWT_TYPE . q{ } . $token );
     $c->app->log->info( 'new token for user ' . $calling_user->id );
-    return $c->rendered(204);
+    return $c->render( app_msg( 200,
+                                {
+                                    token => $token,
+                                    expires => $now + $JWT_EXPIRATION - 30,
+                                } ) );
 }
 
 1;
