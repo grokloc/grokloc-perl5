@@ -19,7 +19,7 @@ our $AUTHORITY = 'cpan:bclawsie';
 sub create_ ( $c ) {
 
     # only root or a org owner can create a user
-    if ( $c->stash($STASH_AUTH) == $TOKEN_USER ) {
+    if ( $c->stash($STASH_AUTH) == $AUTH_USER ) {
         return $c->render(
             app_msg( 403, { error => 'inadequate authorization' } ) );
     }
@@ -42,7 +42,7 @@ sub create_ ( $c ) {
     }
 
     # if caller is an org owner, must be in same org as prospective new user
-    if ( $c->stash($STASH_AUTH) == $TOKEN_ORG ) {
+    if ( $c->stash($STASH_AUTH) == $AUTH_ORG ) {
         my $calling_user = $c->stash($STASH_USER);
         if ( $calling_user->org ne $user_args{org} ) {
             return $c->render(
@@ -97,7 +97,7 @@ sub read_ ( $c ) {
 
     # regular user can only read themselves, we already know calling_user
     # is active or auth would have returned 404
-    if ( $c->stash($STASH_AUTH) == $TOKEN_USER ) {
+    if ( $c->stash($STASH_AUTH) == $AUTH_USER ) {
         my $calling_user = $c->stash($STASH_USER);
         if ( $c->param('id') ne $calling_user->id ) {
             return $c->render(
@@ -122,7 +122,7 @@ sub read_ ( $c ) {
         return $c->render( app_msg( 404, { error => 'not found' } ) );
     }
 
-    if ( $c->stash($STASH_AUTH) == $TOKEN_ORG ) {
+    if ( $c->stash($STASH_AUTH) == $AUTH_ORG ) {
 
         # org owner must be in same org as user being read
         my $calling_user = $c->stash($STASH_USER);
@@ -143,7 +143,7 @@ sub update_ ( $c ) {
     my %user_args = %{ $c->req->json };
 
     # regular user can only update themselves (but NOT status),
-    if ( $c->stash($STASH_AUTH) == $TOKEN_USER ) {
+    if ( $c->stash($STASH_AUTH) == $AUTH_USER ) {
         my $calling_user = $c->stash($STASH_USER);
         if ( $c->param('id') ne $calling_user->id ) {
             return $c->render(
@@ -156,7 +156,7 @@ sub update_ ( $c ) {
     }
 
     my $user;
-    if ( $c->stash($STASH_AUTH) == $TOKEN_USER ) {
+    if ( $c->stash($STASH_AUTH) == $AUTH_USER ) {
 
         # target user is same as the one auth'd
         $user = $c->stash($STASH_USER);
@@ -178,7 +178,7 @@ sub update_ ( $c ) {
         }
     }
 
-    if ( $c->stash($STASH_AUTH) == $TOKEN_ORG ) {
+    if ( $c->stash($STASH_AUTH) == $AUTH_ORG ) {
 
         # org owner must be in same org as user
         my $calling_user = $c->stash($STASH_USER);

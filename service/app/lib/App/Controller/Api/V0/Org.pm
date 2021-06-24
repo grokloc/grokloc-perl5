@@ -17,7 +17,7 @@ our $AUTHORITY = 'cpan:bclawsie';
 sub create_ ( $c ) {
 
     # only root can create an org
-    if ( $c->stash($STASH_AUTH) != $TOKEN_ROOT ) {
+    if ( $c->stash($STASH_AUTH) != $AUTH_ROOT ) {
         return $c->render(
             app_msg( 403, { error => 'inadequate authorization' } ) );
     }
@@ -63,7 +63,7 @@ sub read_ ( $c ) {
 
     # if root is the caller, the stashed org is the root_org,
     # so read the requested org
-    if ( $c->stash($STASH_AUTH) == $TOKEN_ROOT ) {
+    if ( $c->stash($STASH_AUTH) == $AUTH_ROOT ) {
         my $org;
         try {
             $org = GrokLOC::Models::Org::read( $c->st->random_replica(),
@@ -97,7 +97,7 @@ sub read_ ( $c ) {
 sub update_ ( $c ) {
 
     # only root can update an org
-    if ( $c->stash($STASH_AUTH) != $TOKEN_ROOT ) {
+    if ( $c->stash($STASH_AUTH) != $AUTH_ROOT ) {
         return $c->render(
             app_msg( 403, { error => 'inadequate authorization' } ) );
     }

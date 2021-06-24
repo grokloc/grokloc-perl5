@@ -7,12 +7,12 @@ use Crypt::Misc qw( random_v4uuid );
 use Readonly ();
 use experimental qw(signatures try);
 use GrokLOC::Models qw(
-  $ORGS_TABLENAME
-  $RESPONSE_CONFLICT
-  $RESPONSE_OK
-  $RESPONSE_ORG_ERR
-  $STATUS_ACTIVE
-  $USERS_TABLENAME
+    $ORGS_TABLENAME
+    $RESPONSE_CONFLICT
+    $RESPONSE_OK
+    $RESPONSE_ORG_ERR
+    $STATUS_ACTIVE
+    $USERS_TABLENAME
 );
 use GrokLOC::Models::Base;
 use GrokLOC::Models::Meta;

@@ -12,7 +12,7 @@ our $AUTHORITY = 'cpan:bclawsie';
 
 # status should be authenticated for root only
 sub status_ ( $c ) {
-    if ( $c->stash($STASH_AUTH) != $TOKEN_ROOT ) {
+    if ( $c->stash($STASH_AUTH) != $AUTH_ROOT ) {
         return $c->render(
             app_msg( 403, { error => 'inadequate authorization' } ) );
     }

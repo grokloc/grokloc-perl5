@@ -1,6 +1,5 @@
 package App::Controller::Api::V0::Auth;
 use strictures 2;
-use Carp qw(croak);
 use Mojo::Base 'Mojolicious::Controller';
 use experimental qw(signatures switch try);
 use GrokLOC::App qw(:all);
@@ -77,6 +76,7 @@ sub with_session_ ( $c ) {
 
 # with_token_ calls to with_session but also requires that the auth
 # level include a token setting (user, org or root) to continue
+## no critic (RequireFinalReturn)
 sub with_token_ ( $c ) {
     unless ( $c->with_session_ ) {
         $c->app->log->error('inlined call to with_session failed');
@@ -91,7 +91,6 @@ sub with_token_ ( $c ) {
     try {
         my $encoded = $c->req->headers->header($AUTHORIZATION);
         my $decoded = decode_token( $encoded, $c->st->key );
-        croak 'stash user' unless ( defined $c->stash($STASH_USER) );
         unless ( $decoded->{'sub'} eq $c->stash($STASH_USER)->id ) {
             return $c->render(
                 app_msg( 400, { error => 'token contents incorrect' } ) );
@@ -106,19 +105,6 @@ sub with_token_ ( $c ) {
         return $c->render( app_msg( 400, { error => 'token decode error' } ) );
     }
 
-    my $auth_level = $c->stash($STASH_AUTH);
-    given ($auth_level) {
-        when ($AUTH_USER) { $auth_level = $TOKEN_USER; }
-        when ($AUTH_ORG)  { $auth_level = $TOKEN_ORG; }
-        when ($AUTH_ROOT) { $auth_level = $TOKEN_ROOT; }
-        default {
-            $c->app->log->error('invalid auth level');
-            $c->render( app_msg( 500, { error => 'internal error' } ) );
-            return;
-        }
-    }
-
-    $c->stash( $STASH_AUTH => $auth_level );
     return 1;
 }
 
@@ -135,7 +121,6 @@ sub new_token_ ( $c ) {
         );
     }
 
-    croak 'stash user' unless ( defined $c->stash($STASH_USER) );
     my $calling_user = $c->stash($STASH_USER);
     unless (
         verify_token_request(
@@ -187,15 +172,13 @@ The `with_session` middleware performs the following checks:
 
 - From the X-GrokLOC-ID header, look up the user and the org.
   - Set the stash auth level to AUTH_NONE.
-  - If the user is not active, immediately return 404.
+  - If the user is not active, immediately return 400.
   - If the org is not active, immediately return 400.
   - Otherwise: 
     - Set the stash references to the user and org model instances.
     - Set the stash auth level to AUTH_USER, AUTH_ORG or AUTH_ROOT
 - If the X-GrokLOC-Token header is found, validate the JWT.
   - If the JWT is unparseable, return 400.
-  - If the JWT is not valid or expired, immediately return 403.
-  - Otherwise:
-    - Change the stash auth value to TOKEN_USER, TOKEN_ORG, or TOKEN_ROOT.
+  - If the JWT is not valid or expired, immediately return 400.
 
 =cut
