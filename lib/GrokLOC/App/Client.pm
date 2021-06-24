@@ -5,12 +5,7 @@ use Carp qw( croak );
 use Mojo::JSON qw( decode_json );
 use experimental qw(signatures);
 use GrokLOC::App qw( $X_GROKLOC_ID $X_GROKLOC_TOKEN_REQUEST );
-use GrokLOC::App::JWT qw(
-  $AUTHORIZATION
-  $JWT_EXPIRATION
-  $JWT_TYPE
-  encode_token_request
-);
+use GrokLOC::App::JWT qw( $AUTHORIZATION $JWT_TYPE encode_token_request );
 use GrokLOC::App::Routes qw(
   $OK_ROUTE
   $ORG_ROUTE
@@ -79,10 +74,11 @@ class GrokLOC::App::Client {
         }
 
         my $token_fields = decode_json $result->body;
-        croak 'body parse' unless (defined $token_fields && ref $token_fields eq 'HASH');
-        croak 'missing token' unless (exists $token_fields->{token});
-        croak 'missing expires' unless (exists $token_fields->{expires});        
-        $_token = $token_fields->{token};
+        croak 'body parse'
+          unless ( defined $token_fields && ref $token_fields eq 'HASH' );
+        croak 'missing token'   unless ( exists $token_fields->{token} );
+        croak 'missing expires' unless ( exists $token_fields->{expires} );
+        $_token         = $token_fields->{token};
         $_token_expires = $token_fields->{expires};
 
         return {

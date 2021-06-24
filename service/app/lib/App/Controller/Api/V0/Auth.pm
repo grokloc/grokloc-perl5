@@ -62,6 +62,7 @@ sub with_session_ ( $c ) {
 
     my $auth_level = $AUTH_USER;
     if ( $org->id eq $c->st->root_org ) {
+
         # allow for multiple accounts in root org
         $auth_level = $AUTH_ROOT;
     }
@@ -145,11 +146,15 @@ sub new_token_ ( $c ) {
     }
 
     $c->app->log->info( 'new token for user ' . $calling_user->id );
-    return $c->render( app_msg( 200,
-                                {
-                                    token => $token,
-                                    expires => $now + $JWT_EXPIRATION - 30,
-                                } ) );
+    return $c->render(
+        app_msg(
+            200,
+            {
+                token   => $token,
+                expires => $now + $JWT_EXPIRATION - 30,
+            }
+        )
+    );
 }
 
 1;
