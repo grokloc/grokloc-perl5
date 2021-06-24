@@ -43,7 +43,7 @@ sub encode_token ( $id, $key ) {
 
 sub decode_token ( $token, $key ) {
 
-    # $token may come in as '$TOKEN_TYPE $val' if from a web context.
+    # $token may come in as '$JWT_TYPE $val' if from a web context
     if ( $token =~ /^$JWT_TYPE\s(\S+)/msx ) {
         $token = $1;
     }

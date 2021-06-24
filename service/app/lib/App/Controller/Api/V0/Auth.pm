@@ -1,5 +1,6 @@
 package App::Controller::Api::V0::Auth;
 use strictures 2;
+use Carp qw(croak);
 use Mojo::Base 'Mojolicious::Controller';
 use experimental qw(signatures switch try);
 use GrokLOC::App qw(:all);
@@ -25,8 +26,8 @@ sub with_session_ ( $c ) {
 
     # X-GrokLOC-ID header must be present in order to look up the user
     unless ( $c->req->headers->header($X_GROKLOC_ID) ) {
-        $c->render( app_msg( 400, { error => 'missing:' . $X_GROKLOC_ID } ) );
-        return;
+        return $c->render(
+            app_msg( 400, { error => 'missing:' . $X_GROKLOC_ID } ) );
     }
     my $user_id = $c->req->headers->header($X_GROKLOC_ID);
     my $user;
@@ -41,8 +42,7 @@ sub with_session_ ( $c ) {
     }
 
     if ( !defined($user) || $user->meta->status != $STATUS_ACTIVE ) {
-        $c->render( app_msg( 400, { error => 'user not found' } ) );
-        return;
+        return $c->render( app_msg( 400, { error => 'user not found' } ) );
     }
 
     my $org;
@@ -56,8 +56,7 @@ sub with_session_ ( $c ) {
         return;
     }
     if ( !defined($org) || $org->meta->status != $STATUS_ACTIVE ) {
-        $c->render( app_msg( 400, { error => 'org not found' } ) );
-        return;
+        return $c->render( app_msg( 400, { error => 'org not found' } ) );
     }
 
     my $auth_level = $AUTH_USER;
@@ -70,26 +69,6 @@ sub with_session_ ( $c ) {
         $auth_level = $AUTH_ORG;
     }
 
-    if ( $c->req->headers->header($AUTHORIZATION) ) {
-        try {
-            my $encoded = $c->req->headers->header($AUTHORIZATION);
-            my $decoded = decode_token( $encoded, $c->st->key );
-        }
-        catch ($e) {
-            $c->render( app_msg( 400, { error => 'refresh token' } ) );
-            return;
-        }
-        given ($auth_level) {
-            when ($AUTH_USER) { $auth_level = $TOKEN_USER; }
-            when ($AUTH_ORG)  { $auth_level = $TOKEN_ORG; }
-            when ($AUTH_ROOT) { $auth_level = $TOKEN_ROOT; }
-            default {
-                $c->app->log->error('invalid auth level');
-                $c->render( app_msg( 500, { error => 'internal error' } ) );
-                return;
-            }
-        }
-    }
     $c->stash( $STASH_AUTH => $auth_level );
     $c->stash( $STASH_ORG  => $org );
     $c->stash( $STASH_USER => $user );
@@ -103,11 +82,43 @@ sub with_token_ ( $c ) {
         $c->app->log->error('inlined call to with_session failed');
         return;
     }
-    if ( $c->stash($STASH_AUTH) < $TOKEN_USER ) {
-        $c->app->log->error('expected token setting');
-        $c->render( app_msg( 403, { error => 'inadequate authorization' } ) );
-        return;
+
+    unless ( $c->req->headers->header($AUTHORIZATION) ) {
+        return $c->render(
+            app_msg( 400, { error => 'missing ' . $AUTHORIZATION } ) );
     }
+
+    try {
+        my $encoded = $c->req->headers->header($AUTHORIZATION);
+        my $decoded = decode_token( $encoded, $c->st->key );
+        croak 'stash user' unless ( defined $c->stash($STASH_USER) );
+        unless ( $decoded->{'sub'} eq $c->stash($STASH_USER)->id ) {
+            return $c->render(
+                app_msg( 400, { error => 'token contents incorrect' } ) );
+        }
+        my $now = time;
+        if ( $decoded->{exp} < $now ) {
+            return $c->render( app_msg( 400, { error => 'token expired' } ) );
+        }
+    }
+    catch ($e) {
+        $c->app->log->info( 'token decode:' . $e );
+        return $c->render( app_msg( 400, { error => 'token decode error' } ) );
+    }
+
+    my $auth_level = $c->stash($STASH_AUTH);
+    given ($auth_level) {
+        when ($AUTH_USER) { $auth_level = $TOKEN_USER; }
+        when ($AUTH_ORG)  { $auth_level = $TOKEN_ORG; }
+        when ($AUTH_ROOT) { $auth_level = $TOKEN_ROOT; }
+        default {
+            $c->app->log->error('invalid auth level');
+            $c->render( app_msg( 500, { error => 'internal error' } ) );
+            return;
+        }
+    }
+
+    $c->stash( $STASH_AUTH => $auth_level );
     return 1;
 }
 
@@ -124,6 +135,7 @@ sub new_token_ ( $c ) {
         );
     }
 
+    croak 'stash user' unless ( defined $c->stash($STASH_USER) );
     my $calling_user = $c->stash($STASH_USER);
     unless (
         verify_token_request(
