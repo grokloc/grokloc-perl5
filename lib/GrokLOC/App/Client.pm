@@ -5,7 +5,11 @@ use Carp qw( croak );
 use Mojo::JSON qw( decode_json );
 use experimental qw(signatures);
 use GrokLOC::App qw( $X_GROKLOC_ID $X_GROKLOC_TOKEN_REQUEST );
-use GrokLOC::App::JWT qw( $AUTHORIZATION $JWT_TYPE encode_token_request );
+use GrokLOC::App::JWT qw(
+  $AUTHORIZATION
+  encode_token_request
+  token_to_header_val
+);
 use GrokLOC::App::Routes qw(
   $OK_ROUTE
   $ORG_ROUTE
@@ -83,7 +87,7 @@ class GrokLOC::App::Client {
 
         return {
             $X_GROKLOC_ID  => $id,
-            $AUTHORIZATION => $JWT_TYPE . q{ } . $_token
+            $AUTHORIZATION => token_to_header_val($_token)
         };
     }
 

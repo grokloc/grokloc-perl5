@@ -41,12 +41,20 @@ sub encode_token ( $id, $key ) {
     );
 }
 
-sub decode_token ( $token, $key ) {
-
-    # $token may come in as '$JWT_TYPE $val' if from a web context
-    if ( $token =~ /^$JWT_TYPE\s(\S+)/msx ) {
-        $token = $1;
+# token may come in as '$JWT_TYPE $val' if from a web context
+sub token_from_header_val ( $v ) {
+    if ( $v =~ /^$JWT_TYPE\s(\S+)/msx ) {
+        return $1;
     }
+    return $v;
+}
+
+# prepend the jwt type to the token value for use in a header
+sub token_to_header_val ( $token ) {
+    return $JWT_TYPE . q{ } . $token;
+}
+
+sub decode_token ( $token, $key ) {
     return decode_jwt(
         token          => $token,
         key            => $key,
@@ -58,10 +66,10 @@ sub decode_token ( $token, $key ) {
 }
 
 our @EXPORT_OK =
-  qw(encode_token_request verify_token_request encode_token decode_token $AUTHORIZATION $JWT_TYPE $JWT_EXPIRATION);
+  qw(encode_token_request verify_token_request encode_token decode_token token_from_header_val token_to_header_val $AUTHORIZATION $JWT_TYPE $JWT_EXPIRATION);
 our %EXPORT_TAGS = (
     all => [
-        qw(encode_token_request verify_token_request encode_token decode_token $AUTHORIZATION $JWT_TYPE $JWT_EXPIRATION)
+        qw(encode_token_request verify_token_request encode_token decode_token token_from_header_val token_to_header_val $AUTHORIZATION $JWT_TYPE $JWT_EXPIRATION)
     ],
 );
 

@@ -34,6 +34,9 @@ ok(
 ) or note($@);
 ref_ok( $decoded, 'HASH' );
 
+is( $jwt, token_from_header_val($jwt) );
+is( $jwt, token_from_header_val( token_to_header_val($jwt) ) );
+
 done_testing;
 
 1;

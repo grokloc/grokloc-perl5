@@ -89,7 +89,8 @@ sub with_token_ ( $c ) {
     }
 
     try {
-        my $encoded = $c->req->headers->header($AUTHORIZATION);
+        my $encoded =
+          token_from_header_val( $c->req->headers->header($AUTHORIZATION) );
         my $decoded = decode_token( $encoded, $c->st->key );
         unless ( $decoded->{'sub'} eq $c->stash($STASH_USER)->id ) {
             return $c->render(
