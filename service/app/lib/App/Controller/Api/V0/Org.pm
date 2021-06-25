@@ -35,7 +35,8 @@ sub create_ ( $c ) {
     }
     catch ($e) {
         $c->app->log->error( 'internal error creating org:' . $e );
-        return $c->render( app_msg( 500, { error => 'internal error' } ) );
+        $c->render( app_msg( 500, { error => 'internal error' } ) );
+        return;
     }
 
     # insert
@@ -45,7 +46,8 @@ sub create_ ( $c ) {
     }
     catch ($e) {
         $c->app->log->error( 'internal error inserting org:' . $e );
-        return $c->render( app_msg( 500, { error => 'internal error' } ) );
+        $c->render( app_msg( 500, { error => 'internal error' } ) );
+        return;
     }
 
     if ( $RESPONSE_OK == $result ) {
@@ -56,7 +58,8 @@ sub create_ ( $c ) {
         return $c->render( app_msg( 409, { error => 'conflict' } ) );
     }
     $c->app->log->error('unknown internal error inserting org');
-    return $c->render( app_msg( 500, { error => 'internal error' } ) );
+    $c->render( app_msg( 500, { error => 'internal error' } ) );
+    return;
 }
 
 sub read_ ( $c ) {
@@ -72,7 +75,8 @@ sub read_ ( $c ) {
         catch ($e) {
             $c->app->log->error(
                 'internal error reading org:' . $c->param('id') . ":$e" );
-            return $c->render( app_msg( 500, { error => 'internal error' } ) );
+            $c->render( app_msg( 500, { error => 'internal error' } ) );
+            return;
         }
 
         if ( !defined $org ) {
@@ -110,7 +114,8 @@ sub update_ ( $c ) {
     catch ($e) {
         $c->app->log->error(
             'internal error reading org:' . $c->param('id') . ":$e" );
-        return $c->render( app_msg( 500, { error => 'internal error' } ) );
+        $c->render( app_msg( 500, { error => 'internal error' } ) );
+        return;
     }
 
     unless ( defined $org ) {
@@ -156,7 +161,8 @@ sub update_ ( $c ) {
     catch ($e) {
         $c->app->log->error(
             'internal error updating org:' . $c->param('id') . ":$e" );
-        return $c->render( app_msg( 500, { error => 'internal error' } ) );
+        $c->render( app_msg( 500, { error => 'internal error' } ) );
+        return;
     }
 
     if ( $RESPONSE_OK == $result ) {
@@ -171,7 +177,8 @@ sub update_ ( $c ) {
 
     $c->app->log->error(
         'internal error updating org:' . $c->param('id') . ":$result-" );
-    return $c->render( app_msg( 500, { error => 'internal error' } ) );
+    $c->render( app_msg( 500, { error => 'internal error' } ) );
+    return;
 }
 
 1;

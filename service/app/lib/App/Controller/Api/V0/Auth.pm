@@ -139,7 +139,8 @@ sub new_token_ ( $c ) {
     catch ($e) {
         $c->app->log->error(
             "cannot encode token for user:$calling_user->id:$e");
-        return $c->render( app_msg( 500, { error => 'internal error' } ) );
+        $c->render( app_msg( 500, { error => 'internal error' } ) );
+        return;
     }
 
     $c->app->log->info( 'new token for user ' . $calling_user->id );
