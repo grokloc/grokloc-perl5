@@ -5,13 +5,13 @@ use Readonly ();
 use strictures 2;
 use experimental qw(signatures try);
 use GrokLOC::Models qw(
-    $NO_OWNER
-    $ORGS_TABLENAME
-    $RESPONSE_CONFLICT
-    $RESPONSE_OK
-    $RESPONSE_USER_ERR
-    $STATUS_ACTIVE
-    $USERS_TABLENAME
+  $NO_OWNER
+  $ORGS_TABLENAME
+  $RESPONSE_CONFLICT
+  $RESPONSE_OK
+  $RESPONSE_USER_ERR
+  $STATUS_ACTIVE
+  $USERS_TABLENAME
 );
 use GrokLOC::Models::Base;
 use GrokLOC::Models::Meta;
