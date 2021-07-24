@@ -63,7 +63,7 @@ class GrokLOC::Models::User extends GrokLOC::Models::Base {
             $org                 = $args{org};
             $password            = $args{password};
 
-            # parent constructor will provide id, meta
+            # parent constructor will provide id, meta, so we're done
             return;
         }
 
@@ -89,7 +89,8 @@ class GrokLOC::Models::User extends GrokLOC::Models::Base {
         return;
     }
 
-    # insert can be called after ->new. Call like:
+    # insert can be called after ->new
+    # call like:
     # try {
     #     $result = $org->insert( $master );
     #     die 'insert failed' unless $result == $RESPONSE_OK;
@@ -184,11 +185,11 @@ class GrokLOC::Models::User extends GrokLOC::Models::Base {
     }
 }
 
-# read is a static method for creating a new Org from an existing row.
-# Call like: ;
+# read is a static method for creating a new Org from an existing row
+# call like:
 # try {
 #     $user = GrokLOC::Models::User::read( $dbo, $key, $id );
-#     ...$user is undef if the row isn't found.
+#     ...$user is undef if the row isn't found
 # }
 # catch ($e) {
 #     ...otherwise unknown error

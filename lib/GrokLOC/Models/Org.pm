@@ -43,7 +43,7 @@ class GrokLOC::Models::Org extends GrokLOC::Models::Base {
         $owner = $NO_OWNER;
 
         # new org
-        # parent constructor will provide id, meta
+        # parent constructor will provide id, meta, so we're done
         return if ( 1 == scalar keys %args );
 
         # existing org
@@ -51,14 +51,15 @@ class GrokLOC::Models::Org extends GrokLOC::Models::Base {
           unless ( exists $args{owner} && safe_str( $args{owner} ) );
         $owner = $args{owner};
 
-        # Make sure caller at least passed id; meta can be optional.
+        # make sure caller at least passed id; meta can be optional
         croak 'missing base args' unless ( exists $args{id} );
 
         # parent constructor validates id and optionally meta
         return;
     }
 
-    # insert can be called after ->new. Call like:
+    # insert can be called after ->new
+    # call like:
     # try {
     #     $result = $org->insert( $master );
     #     die 'insert failed' unless $result == $RESPONSE_OK;
@@ -119,11 +120,11 @@ class GrokLOC::Models::Org extends GrokLOC::Models::Base {
     }
 }
 
-# read is a static method for creating a new Org from an existing row.
-# Call like: ;
+# read is a static method for creating a new Org from an existing row
+# call like:
 # try {
 #     $org = GrokLOC::Models::Org::read( $dbo, $id );
-#     ...$org is undef if the row isn't found.
+#     ...$org is undef if the row isn't found
 # }
 # catch ($e) {
 #     ...otherwise unknown error
