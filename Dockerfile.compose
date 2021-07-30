@@ -4,6 +4,7 @@ ENV PERL5LIB "/grokloc/lib:/grokloc/service/app/lib"
 ENV PERLCRITIC /grokloc/.perlcritic
 ENV PERL_JSON_BACKEND "Cpanel::JSON::XS,JSON::XS,JSON::PP"
 ENV GROKLOC_ENV "UNIT"
+RUN apt install -y git
 COPY env env
 COPY lib lib
 COPY service service
