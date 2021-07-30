@@ -48,7 +48,8 @@ RUN cpanm -n \
     List::UtilsBy \
     List::MoreUtils \
     App::perlimports \
-    Git::Raw
+    Git::Raw \
+    Lang::Go::Mod
 
 RUN rm -f /root/.cpan/build.log && rm -f /root/.cpan/latest-build
 RUN apt -y purge build-essential
