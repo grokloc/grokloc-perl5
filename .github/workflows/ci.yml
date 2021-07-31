@@ -4,7 +4,7 @@ jobs:
   ci:
     runs-on: ubuntu-latest
     container:
-      image: grokloc/grokloc-perl5:dev
+      image: grokloc/grokloc-perl5:unit
       env:
         PERL5LIB: "/__w/grokloc-perl5/grokloc-perl5/lib:/__w/grokloc-perl5/grokloc-perl5/service/app/lib"
         PERLCRITIC: "/__w/grokloc-perl5/grokloc-perl5/.perlcritic"
