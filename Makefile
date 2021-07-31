@@ -1,5 +1,5 @@
+IMG_UNIT     = grokloc/grokloc-perl5:unit
 IMG_DEV      = grokloc/grokloc-perl5:dev
-IMG_COMPOSE  = grokloc/grokloc-perl5:compose
 DOCKER       = docker
 DOCKER_RUN   = $(DOCKER) run --rm -it
 CWD          = $(shell pwd)
@@ -17,22 +17,22 @@ LIBS         = $(shell find . -type f -name \*pm)
 LIB_TESTS    = $(shell find t -type f)
 APP_TESTS    = $(shell if [ -d service/app/t ]; then find service/app/t -type f; fi)
 APP_MAIN     = service/app/script/app
-RUN          = $(DOCKER_RUN) -v $(CWD):$(BASE) -w $(BASE) $(UNIT_ENVS) $(PORTS) $(IMG_DEV)
+RUN          = $(DOCKER_RUN) -v $(CWD):$(BASE) -w $(BASE) $(UNIT_ENVS) $(PORTS) $(IMG_UNIT)
 
-# Base/CI image.
-.PHONY: docker
-docker:
+# Unit/CI image.
+.PHONY: docker-unit
+docker-unit:
+	$(DOCKER) build . -f Dockerfile.unit -t $(IMG_UNIT)
+
+# Unit/CI image. Force.
+.PHONY: docker-unit-force
+docker-unit-force:
+	$(DOCKER) build --no-cache . -f Dockerfile.unit -t $(IMG_UNIT)
+
+# Integration/compose Dev build.
+.PHONY: docker-dev
+docker-dev:
 	$(DOCKER) build . -f Dockerfile.dev -t $(IMG_DEV)
-
-# Base/CI image. Force.
-.PHONY: docker-force
-docker-force:
-	$(DOCKER) build --no-cache . -f Dockerfile.dev -t $(IMG_DEV)
-
-# Compose build.
-.PHONY: compose
-compose:
-	$(DOCKER) build . -f Dockerfile.compose -t $(IMG_COMPOSE)
 
 # Shell in container.
 .PHONY: shell
