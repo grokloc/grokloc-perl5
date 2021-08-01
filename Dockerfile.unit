@@ -60,6 +60,7 @@ RUN mkdir /root/.re.pl
 RUN echo "use v5.34;\nuse strictures 2;\nuse Data::Dumper;\nuse experimental qw(signatures switch);\nuse feature 'try';\n" > /root/.re.pl/repl.rc
 RUN chown -R root:root /root
 
+# repo base, must match repo base used in unit env
 WORKDIR /repos
 RUN git clone https://github.com/grokloc/grokloc-sample-repo-go.git
 

@@ -28,6 +28,9 @@ sub init () {
     my $kdf_iterations = 1;
     my $key            = key(random_v4uuid);
 
+    # must match repo base created in Dockerfile.unit
+    my $repo_base = '/repos';
+
     my ( $root_org, $root_user ) =
       GrokLOC::Test::org_user( $master, $key, $kdf_iterations );
 
@@ -36,6 +39,7 @@ sub init () {
         replicas             => [$master],
         kdf_iterations       => $kdf_iterations,
         key                  => $key,
+        repo_base            => $repo_base,
         root_org             => $root_org->id,
         root_user            => $root_user->id,
         root_user_api_secret => $root_user->api_secret,

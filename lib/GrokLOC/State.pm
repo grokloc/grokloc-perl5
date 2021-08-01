@@ -19,6 +19,7 @@ class GrokLOC::State {
     has @replicas;
     has $kdf_iterations :reader;
     has $key :reader;
+    has $repo_base :reader;
     has $root_org :reader;
     has $root_user :reader;
     has $root_user_api_secret :reader;
@@ -43,6 +44,9 @@ class GrokLOC::State {
         croak 'invalid key'
           unless ( exists $args{key} && safe_str( $args{key} ) );
         $key = $args{key};
+
+        croak 'invalid repo_base' unless -e -w $args{repo_base};
+        $repo_base = $args{repo_base};
 
         croak 'invalid root_org'
           unless ( exists $args{root_org} && safe_str( $args{root_org} ) );
