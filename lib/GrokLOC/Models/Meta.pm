@@ -14,12 +14,11 @@ our $VERSION   = '0.01';
 our $AUTHORITY = 'cpan:bclawsie';
 
 class GrokLOC::Models::Meta {
-    has $status :reader;
-    has $ctime :reader;
-    has $mtime :reader;
+    has $status : reader = $STATUS_UNCONFIRMED;
+    has $ctime  : reader = 0;
+    has $mtime  : reader = 0;
 
     BUILD(%args) {
-        ( $status, $ctime, $mtime ) = ( $STATUS_UNCONFIRMED, 0, 0 );
         if ( exists $args{status} ) {
             croak 'status invalid' unless safe_status( $args{status} );
             $status = $args{status};
