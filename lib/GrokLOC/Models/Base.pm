@@ -18,14 +18,17 @@ our $AUTHORITY = 'cpan:bclawsie';
 class GrokLOC::Models::Base {
     has $id :reader;
     has $meta :reader;
-    has $schema_version :reader;
+    has $schema_version : reader = 0;
 
     BUILD(%args) {
-        ( $id, $meta, $schema_version ) =
-          ( random_v4uuid, GrokLOC::Models::Meta->new, 0 );
+        ( $id, $meta ) = ( random_v4uuid, GrokLOC::Models::Meta->new );
         if ( exists $args{id} ) {
             croak 'id invalid' unless safe_str( $args{id} );
             $id = $args{id};
+        }
+        if ( exists $args{schema_version} ) {
+            croak 'version invalid' if $args{schema_version} !~ /^\d+$/msx;
+            $schema_version = $args{schema_version};
         }
 
         if ( exists $args{meta} ) {
@@ -42,11 +45,6 @@ class GrokLOC::Models::Base {
                 $meta = $args{meta};
             }
         }
-
-        if ( exists $args{schema_version} ) {
-            $schema_version = $args{schema_version};
-        }
-
         return;
     }
 }
@@ -66,6 +64,12 @@ Base model.
 =head1 DESCRIPTION
 
 Base model inherited by other models.
+
+=head1 INTEGRITY
+
+Constructing an object derived from Base should only perform well-formedness
+checks. Validity checks (foreign key constraints etc) should only be checked
+at insertion or update time.
 
 =cut
 

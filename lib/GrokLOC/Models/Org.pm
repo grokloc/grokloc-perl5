@@ -29,7 +29,7 @@ Readonly::Scalar our $TABLENAME      => $ORGS_TABLENAME;
 
 class GrokLOC::Models::Org extends GrokLOC::Models::Base {
     has $name :reader;
-    has $owner :reader;
+    has $owner : reader = $NO_OWNER;
 
     # constructor has two forms:
     # 1. new org
@@ -39,8 +39,7 @@ class GrokLOC::Models::Org extends GrokLOC::Models::Base {
     BUILD(%args) {
         croak 'missing/malformed name'
           unless ( exists $args{name} && safe_str( $args{name} ) );
-        $name  = $args{name};
-        $owner = $NO_OWNER;
+        $name = $args{name};
 
         # new org
         # parent constructor will provide id, meta, so we're done

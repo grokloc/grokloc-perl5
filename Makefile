@@ -99,6 +99,7 @@ local-tidy:
 	find -name \*.pm -print0 | xargs -0 perl -pi -e 's/\;\s+\#\:(reader|writer|mutator)/\:$$1\;/msx'
 	find -name \*.t -print0 | xargs -0 $(TIDY) -b 2>/dev/null
 	find -name \*bak -delete
+	find -name \*.ERR -delete
 
 # perlcritic.
 .PHONY: local-critic
