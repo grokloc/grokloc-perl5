@@ -69,7 +69,8 @@ Base model inherited by other models.
 
 Constructing an object derived from Base should only perform well-formedness
 checks. Validity checks (foreign key constraints etc) should only be checked
-at insertion or update time.
+at insertion or update time. Other validity checks which are not db-related
+can be performed in the constructor.
 
 =cut
 
