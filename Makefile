@@ -83,7 +83,7 @@ local-check:
 # Perl test.
 .PHONY: local-test
 local-test:
-	$(TEST_RUNNER) $(LIB_TESTS) $(APP_TESTS)
+	$(TEST_RUNNER) $(LIB_TESTS) $(APP_TESTS) 
 
 # perlimports.
 .PHONY: local-imports

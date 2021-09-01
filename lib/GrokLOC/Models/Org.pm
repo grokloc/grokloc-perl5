@@ -2,8 +2,9 @@ package GrokLOC::Models::Org;
 use Carp qw( croak );
 use Object::Pad;
 use Readonly ();
+use Syntax::Keyword::Try;
 use strictures 2;
-use experimental qw(signatures try);
+use experimental qw(signatures);
 use GrokLOC::Models qw(
   $NO_OWNER
   $ORGS_TABLENAME
@@ -24,36 +25,45 @@ use GrokLOC::Security::Input qw( safe_objs safe_str );
 our $VERSION   = '0.01';
 our $AUTHORITY = 'cpan:bclawsie';
 
-Readonly::Scalar our $SCHEMA_VERSION => 0;
+Readonly::Scalar our $SCHEMA_VERSION => 1;
 Readonly::Scalar our $TABLENAME      => $ORGS_TABLENAME;
 
 class GrokLOC::Models::Org extends GrokLOC::Models::Base {
     has $name :reader;
-    has $owner : reader = $NO_OWNER;
+    has $owner : reader;
 
     # constructor has two forms:
     # 1. new org
     #    only name is required in args
     # 2. existing org
-    #    all fields required except for meta, which is optional
+    #    all fields required
+    sub BUILDARGS ($self, %args) {
+        my @required = (qw(name));
+        for my $k (@required) {
+            croak "missing/malformed $k"
+              unless ( exists $args{$k} && safe_str( $args{$k} ) );
+        }
+        if ( scalar @required == scalar keys %args ) {
+
+            # new org, only required args were passed
+            $args{owner} = $NO_OWNER;
+
+            # required in Base
+            $args{schema_version} = $SCHEMA_VERSION;
+            $args{meta}           = GrokLOC::Models::Meta->new;
+        }
+        else {
+            # existing org, must have all args
+            for my $k (qw(id name owner meta schema_version)) {
+                croak "missing $k" unless ( exists $args{$k} );
+            }
+        }
+        return $self->SUPER::BUILDARGS(%args);
+    }
+
     BUILD(%args) {
-        croak 'missing/malformed name'
-          unless ( exists $args{name} && safe_str( $args{name} ) );
-        $name = $args{name};
-
-        # new org
-        # parent constructor will provide id, meta, so we're done
-        return if ( 1 == scalar keys %args );
-
-        # existing org
-        croak 'missing/malformed owner'
-          unless ( exists $args{owner} && safe_str( $args{owner} ) );
+        $name  = $args{name};
         $owner = $args{owner};
-
-        # make sure caller at least passed id; meta can be optional
-        croak 'missing base args' unless ( exists $args{id} );
-
-        # parent constructor validates id and optionally meta
         return;
     }
 

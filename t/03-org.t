@@ -6,6 +6,7 @@ use Test2::V0;
 use Test2::Tools::Exception;
 use GrokLOC::Env qw(:all);
 use GrokLOC::Models qw(:all);
+use GrokLOC::Models::Meta;
 use GrokLOC::Models::Org;
 use GrokLOC::State::Init qw(state_init);
 
@@ -44,9 +45,11 @@ my $owner = random_v4uuid;
 ok(
     lives {
         $org = GrokLOC::Models::Org->new(
-            name  => $name,
-            owner => $owner,
-            id    => $id
+            id             => $id,
+            name           => $name,
+            owner          => $owner,
+            meta           => GrokLOC::Models::Meta->new,
+            schema_version => $GrokLOC::Models::Org::SCHEMA_VERSION
         );
     }
 ) or note($@);

@@ -5,7 +5,8 @@ use Carp qw( croak );
 use Crypt::Digest::SHA256 qw( sha256_b64 );
 use Crypt::Misc qw( random_v4uuid );
 use Readonly ();
-use experimental qw(signatures try);
+use Syntax::Keyword::Try;
+use experimental qw(signatures);
 use GrokLOC::Models qw(
   $ORGS_TABLENAME
   $RESPONSE_CONFLICT
@@ -26,7 +27,7 @@ use GrokLOC::Security::Input qw( safe_objs safe_str );
 our $VERSION   = '0.01';
 our $AUTHORITY = 'cpan:bclawsie';
 
-Readonly::Scalar our $SCHEMA_VERSION => 0;
+Readonly::Scalar our $SCHEMA_VERSION => 1;
 Readonly::Scalar our $TABLENAME      => $USERS_TABLENAME;
 
 class GrokLOC::Models::User extends GrokLOC::Models::Base {
@@ -45,37 +46,40 @@ class GrokLOC::Models::User extends GrokLOC::Models::Base {
     #    (display, email, org, password)
     #    password is always passed as already dervied
     # 2. existing user
-    #    all fields required except for meta, which is optional
-    BUILD(%args) {
-        if ( 4 == scalar keys %args ) {
-
-            # new user
-            for my $k (qw(display_name email org password)) {
-                croak "missing/malformed $k"
-                  unless ( exists $args{$k} && safe_str( $args{$k} ) );
-            }
-            $api_secret          = random_v4uuid;
-            $api_secret_digest   = sha256_b64($api_secret);
-            $display_name        = $args{display_name};
-            $display_name_digest = sha256_b64( $args{display_name} );
-            $email               = $args{email};
-            $email_digest        = sha256_b64( $args{email} );
-            $org                 = $args{org};
-            $password            = $args{password};
-
-            # parent constructor will provide id, meta, so we're done
-            return;
-        }
-
-        # existing user
-        for my $k (
-            qw(id api_secret api_secret_digest display_name
-            display_name_digest email email_digest org password)
-          )
-        {
+    #    all fields required
+    sub BUILDARGS ($self, %args) {
+        my @required = (qw(display_name email org password));
+        for my $k (@required) {
             croak "missing/malformed $k"
               unless ( exists $args{$k} && safe_str( $args{$k} ) );
         }
+        if ( scalar @required == scalar keys %args ) {
+
+            # new user, only required args were passed
+            $args{api_secret}          = random_v4uuid;
+            $args{api_secret_digest}   = sha256_b64( $args{api_secret} );
+            $args{display_name_digest} = sha256_b64( $args{display_name} );
+            $args{email_digest}        = sha256_b64( $args{email} );
+
+            # required in Base
+            $args{schema_version} = $SCHEMA_VERSION;
+            $args{meta}           = GrokLOC::Models::Meta->new;
+        }
+        else {
+            # existing user, must have all args
+            for my $k (
+                qw(id api_secret api_secret_digest display_name
+                display_name_digest email email_digest org password
+                meta schema_version)
+              )
+            {
+                croak "missing/malformed $k" unless ( exists $args{$k} );
+            }
+        }
+        return $self->SUPER::BUILDARGS(%args);
+    }
+
+    BUILD(%args) {
         $api_secret          = $args{api_secret};
         $api_secret_digest   = $args{api_secret_digest};
         $display_name        = $args{display_name};
@@ -84,8 +88,6 @@ class GrokLOC::Models::User extends GrokLOC::Models::Base {
         $email_digest        = $args{email_digest};
         $org                 = $args{org};
         $password            = $args{password};
-
-        # parent constructor validates id and optionally meta
         return;
     }
 

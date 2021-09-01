@@ -78,6 +78,7 @@ ok(
             org                 => $user->org,
             password            => $user->password,
             meta                => $user->meta,
+            schema_version      => $GrokLOC::Models::User::SCHEMA_VERSION
         );
     },
     'all args'

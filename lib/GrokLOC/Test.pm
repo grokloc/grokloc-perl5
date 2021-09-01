@@ -1,8 +1,9 @@
 package GrokLOC::Test;
 use Carp qw( croak );
 use Crypt::Misc qw( random_v4uuid );
+use Syntax::Keyword::Try;
 use strictures 2;
-use experimental qw(signatures try);
+use experimental qw(signatures);
 use GrokLOC::Models qw( $RESPONSE_OK $STATUS_ACTIVE );
 use GrokLOC::Models::Org;
 use GrokLOC::Models::User;

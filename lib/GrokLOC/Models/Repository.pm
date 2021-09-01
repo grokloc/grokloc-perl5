@@ -2,8 +2,9 @@ package GrokLOC::Models::Repository;
 use Carp qw( croak );
 use Object::Pad;
 use Readonly ();
+use Syntax::Keyword::Try;
 use strictures 2;
-use experimental qw(signatures try);
+use experimental qw(signatures);
 use GrokLOC::Models qw(
   $REPOSITORIES_TABLENAME
   $RESPONSE_CONFLICT
@@ -20,7 +21,7 @@ use GrokLOC::Security::Input qw( safe_objs safe_str );
 our $VERSION   = '0.01';
 our $AUTHORITY = 'cpan:bclawsie';
 
-Readonly::Scalar our $SCHEMA_VERSION => 0;
+Readonly::Scalar our $SCHEMA_VERSION => 1;
 Readonly::Scalar our $TABLENAME      => $REPOSITORIES_TABLENAME;
 
 class GrokLOC::Models::Repository extends GrokLOC::Models::Base {
@@ -29,20 +30,36 @@ class GrokLOC::Models::Repository extends GrokLOC::Models::Base {
     has $repo_path :reader;
     has $upstream :reader;
 
+    sub BUILDARGS ($self, %args) {
+        my @required = (qw(name org repo_path upstream));
+        for my $k (@required) {
+            croak "missing/malformed $k"
+              unless ( exists $args{$k} && safe_str( $args{$k} ) );
+        }
+        if ( scalar @required == scalar keys %args ) {
+
+            # new repository, only required args were passed
+            # required in Base
+            $args{schema_version} = $SCHEMA_VERSION;
+            $args{meta}           = GrokLOC::Models::Meta->new;
+        }
+        else {
+            # existing repository, must have all args
+            for my $k (qw(id name org repo_path meta schema_version)) {
+                croak "missing $k" unless ( exists $args{$k} );
+            }
+        }
+        return $self->SUPER::BUILDARGS(%args);
+    }
+
     # repo_path should be the fully qualified path to the repo; the
     # caller can combine the state value repo_base with the relative
     # path to their repository
     BUILD(%args) {
-        for my $k (qw(name org repo_path upstream)) {
-            croak "missing/malformed $k"
-              unless ( exists $args{$k} && safe_str( $args{$k} ) );
-        }
         $name      = $args{name};
         $org       = $args{org};
         $repo_path = $args{repo_path};
         $upstream  = $args{upstream};
-
-        # parent constructor will provide id, meta, so we're done
         return;
     }
 

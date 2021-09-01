@@ -18,17 +18,13 @@ our $AUTHORITY = 'cpan:bclawsie';
 class GrokLOC::Models::Base {
     has $id :reader;
     has $meta :reader;
-    has $schema_version : reader = 0;
+    has $schema_version : reader;
 
     BUILD(%args) {
         ( $id, $meta ) = ( random_v4uuid, GrokLOC::Models::Meta->new );
         if ( exists $args{id} ) {
             croak 'id invalid' unless safe_str( $args{id} );
             $id = $args{id};
-        }
-        if ( exists $args{schema_version} ) {
-            croak 'version invalid' if $args{schema_version} !~ /^\d+$/msx;
-            $schema_version = $args{schema_version};
         }
 
         if ( exists $args{meta} ) {
@@ -45,6 +41,10 @@ class GrokLOC::Models::Base {
                 $meta = $args{meta};
             }
         }
+
+        croak 'missing schema_version' unless ( exists $args{schema_version} );
+        croak 'schema_version invalid' if $args{schema_version} !~ /^\d+$/msx;
+        $schema_version = $args{schema_version};
         return;
     }
 }
