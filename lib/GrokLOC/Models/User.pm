@@ -203,6 +203,7 @@ sub read ( $dbo, $key, $id ) {
     my $v = $dbo->db->select( $TABLENAME, [qw{*}], { id => $id } )->hash;
     return unless ( defined $v );    # Not found -> undef.
 
+    # if the key is bad, the decrypted strings won't generate correct hashes
     my $api_secret =
       decrypt( $v->{api_secret}, $key, iv( $v->{email_digest} ) );
     croak 'api secret decryption problem'
