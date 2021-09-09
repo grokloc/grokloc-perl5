@@ -240,6 +240,15 @@ ok(
 is( $read_user->id,           $user->id,      'read ok' );
 is( $read_user->meta->status, $STATUS_ACTIVE, 'confirm status' );
 
+# different key means decryption of encrypted fields will fail
+ok(
+    dies {
+        GrokLOC::Models::User::read( $st->random_replica(), key(random_v4uuid),
+            $user->id );
+    },
+    'read fail with bad key'
+) or note($@);
+
 done_testing;
 
 1;
