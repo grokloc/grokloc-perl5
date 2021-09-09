@@ -204,29 +204,29 @@ sub read ( $dbo, $key, $id ) {
     return unless ( defined $v );    # Not found -> undef.
 
     my $api_secret =
-        decrypt( $v->{api_secret}, $key, iv( $v->{email_digest} ) );
+      decrypt( $v->{api_secret}, $key, iv( $v->{email_digest} ) );
     croak 'api secret decryption problem'
-        if ( sha256_b64($api_secret) ne $v->{api_secret_digest} );
+      if ( sha256_b64($api_secret) ne $v->{api_secret_digest} );
     my $display_name =
-        decrypt( $v->{display_name}, $key, iv( $v->{email_digest} ) );
+      decrypt( $v->{display_name}, $key, iv( $v->{email_digest} ) );
     croak 'display name decryption problem'
-        if ( sha256_b64($display_name) ne $v->{display_name_digest} );
+      if ( sha256_b64($display_name) ne $v->{display_name_digest} );
     my $email = decrypt( $v->{email}, $key, iv( $v->{email_digest} ) );
     croak 'email decryption problem'
-        if ( sha256_b64($email) ne $v->{email_digest} );
+      if ( sha256_b64($email) ne $v->{email_digest} );
 
     return __PACKAGE__->new(
-        id         => $v->{id},
-        api_secret => $api_secret,
-        api_secret_digest => $v->{api_secret_digest},
-        display_name      => $display_name,
+        id                  => $v->{id},
+        api_secret          => $api_secret,
+        api_secret_digest   => $v->{api_secret_digest},
+        display_name        => $display_name,
         display_name_digest => $v->{display_name_digest},
-        email        => $email,
-        email_digest => $v->{email_digest},
-        org          => $v->{org},
-        password     => $v->{password},
-        schema_version => $v->{schema_version},
-        meta           => GrokLOC::Models::Meta->new(
+        email               => $email,
+        email_digest        => $v->{email_digest},
+        org                 => $v->{org},
+        password            => $v->{password},
+        schema_version      => $v->{schema_version},
+        meta                => GrokLOC::Models::Meta->new(
             ctime  => $v->{ctime},
             mtime  => $v->{mtime},
             status => $v->{status}
