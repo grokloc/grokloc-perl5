@@ -4,8 +4,8 @@ use strictures 2;
 use Carp qw( croak );
 use Crypt::Misc qw( random_v4uuid );
 use experimental qw(signatures);
-use GrokLOC::Models ();
-use GrokLOC::Models::Meta;
+use GrokLOC::Models       ();
+use GrokLOC::Models::Meta ();
 use GrokLOC::Security::Input qw( safe_objs safe_str );
 
 # ABSTRACT: Base model inherited by other models.

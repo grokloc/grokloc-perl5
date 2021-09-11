@@ -5,8 +5,8 @@ use Syntax::Keyword::Try;
 use strictures 2;
 use experimental qw(signatures);
 use GrokLOC::Models qw( $RESPONSE_OK $STATUS_ACTIVE );
-use GrokLOC::Models::Org;
-use GrokLOC::Models::User;
+use GrokLOC::Models::Org  ();
+use GrokLOC::Models::User ();
 use GrokLOC::Security::Crypt qw( kdf salt );
 
 # ABSTRACT: Useful testing utilities.

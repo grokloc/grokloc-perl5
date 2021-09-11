@@ -11,7 +11,7 @@ use GrokLOC::Models qw(
   $RESPONSE_OK
 );
 use GrokLOC::Models::Base;
-use GrokLOC::Models::Meta;
+use GrokLOC::Models::Meta ();
 use GrokLOC::Security::Input qw( safe_objs safe_str );
 
 # ABSTRACT: Repository model with persistence methods.

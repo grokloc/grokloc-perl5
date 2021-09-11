@@ -15,7 +15,7 @@ use GrokLOC::Models qw(
   $USERS_TABLENAME
 );
 use GrokLOC::Models::Base;
-use GrokLOC::Models::Meta;
+use GrokLOC::Models::Meta ();
 use GrokLOC::Security::Input qw( safe_objs safe_str );
 
 # ABSTRACT: Org model with persistence methods.

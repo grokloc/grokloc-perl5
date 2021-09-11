@@ -16,7 +16,7 @@ use GrokLOC::Models qw(
   $USERS_TABLENAME
 );
 use GrokLOC::Models::Base;
-use GrokLOC::Models::Meta;
+use GrokLOC::Models::Meta ();
 use GrokLOC::Security::Crypt qw( decrypt encrypt iv );
 use GrokLOC::Security::Input qw( safe_objs safe_str );
 
