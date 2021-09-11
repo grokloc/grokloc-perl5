@@ -10,7 +10,7 @@ UNIT_ENVS    = --env-file ./env/unit.env
 PORTS        = -p 3000:3000
 BASE         = /grokloc
 TIDY         = perltidier
-PERLIMPORTS  = perlimports -i --ignore-modules "Object::Pad,Grokloc::Models::Base" --no-preserve-unused --libs lib,service/app/lib -f
+PERLIMPORTS  = perlimports -i --ignore-modules "Object::Pad,GrokLOC::Models::Base" --no-preserve-unused --libs lib,service/app/lib -f
 CRITIC_ARGS  = 
 TCRITIC_ARGS = --theme=tests
 LIBS         = $(shell find . -type f -name \*pm)
